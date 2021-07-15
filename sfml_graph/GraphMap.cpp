@@ -410,7 +410,6 @@ void GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNode* end
 		}
 		/*********************************/
 
-
 		for (const GraphEdge* pCurEdge : aTravelableEdges)
 		{
 			GRAPH_NODE_ID oppositeNodeID = pCurEdge->GetOppositeNodeID(curNode.nodeID);
