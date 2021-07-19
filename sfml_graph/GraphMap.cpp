@@ -4,6 +4,7 @@
 #include <queue>
 #include <algorithm>
 #include <chrono>
+#include <time.h>
 
 GraphMap::GraphMap()
 	: m_cameraPos{ 0.f, 0.f }
@@ -12,7 +13,7 @@ GraphMap::GraphMap()
 	, m_nextNodeID(0)
 	, m_nextEdgeID(0)
 {
-
+	srand((unsigned int)time(NULL));
 }
 
 GRAPH_NODE_ID GraphMap::AddNode(const GraphNode& node)
@@ -93,6 +94,58 @@ const GraphNode* GraphMap::GetNode(GRAPH_NODE_ID nodeID)
 const GraphEdge* GraphMap::GetEdge(GRAPH_EDGE_ID edgeID)
 {
 	return nullptr;
+}
+
+const GraphNode* GraphMap::GetRandomNode()
+{
+	size_t nodeCount = m_nodeMap.size();
+	size_t randIndex = rand() % nodeCount;
+	size_t index = 0;
+
+	for (auto& curNode : m_nodeMap)
+	{
+		if (index == randIndex)
+			return &(curNode.second);
+
+		index++;
+	}
+
+	return nullptr;
+}
+
+GRAPH_NODE_ID GraphMap::GetRandomNodeID()
+{
+	auto randNode = GetRandomNode();
+	if (randNode != nullptr)
+		return randNode->GetID();
+
+	return INVALID_NODE_ID;
+}
+
+const GraphEdge* GraphMap::GetRandomEdge()
+{
+	size_t edgeCount = m_edgeMap.size();
+	size_t randIndex = rand() % edgeCount;
+	size_t index = 0;
+
+	for (auto& curEdge : m_edgeMap)
+	{
+		if (index == randIndex)
+			return &(curEdge.second);
+
+		index++;
+	}
+
+	return nullptr;
+}
+
+GRAPH_EDGE_ID GraphMap::GetRandomEdgeID()
+{
+	auto randEdge = GetRandomEdge();
+	if (randEdge != nullptr)
+		return randEdge->GetID();
+
+	return INVALID_EDGE_ID;
 }
 
 const std::tuple<const GraphNode*, const GraphNode*> GraphMap::GetEdgeNodes(const GraphEdge& edge)
@@ -346,7 +399,7 @@ void GraphMap::ClearSelectedEdges()
 	m_selectedEdges.clear();
 }
 
-GraphRoute GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNode* endNode)
+GraphRoute GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNode* endNode, double* pDistance_out)
 {
 	std::chrono::time_point<std::chrono::system_clock> now =
 		std::chrono::system_clock::now();
@@ -361,7 +414,7 @@ GraphRoute GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNod
 		return theRoute;
 
 	//ClearSelectedNodes();
-	PushToPQ( pq, GraphPathingNode(startNode->GetID(), 0.0, INVALID_NODE_ID, INVALID_EDGE_ID) );
+	PushToPQ( pq, GraphPathingNode(startNode->GetID(), 0.0, 0.0, INVALID_NODE_ID, INVALID_EDGE_ID) );
 
 	while (!pq.empty())
 	{
@@ -373,6 +426,7 @@ GraphRoute GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNod
 
 		if (curPNode.nodeID == endNode->GetID())
 		{
+			double routeDistance = 0.0;
 			GraphPathingNode* curInRoute = &curPNode;
 			while (curInRoute)
 			{
@@ -383,11 +437,15 @@ GraphRoute GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNod
 			
 				if (foundInSet != visitedSet.end())
 				{
+					routeDistance += curInRoute->pathDistance;
 					curInRoute = &(*foundInSet);
 				}
 				else
 					curInRoute = nullptr;
 			}
+
+			if (pDistance_out != nullptr)
+				*pDistance_out = routeDistance;
 
 			break;
 		}
@@ -398,7 +456,7 @@ GraphRoute GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNod
 		for (const GraphEdge* pCurEdge : aTravelableEdges)
 		{
 			GRAPH_NODE_ID oppositeNodeID = pCurEdge->GetOppositeNodeID(curPNode.nodeID);
-			auto neighborPNode = GraphPathingNode(oppositeNodeID, curPNode.pathWeight + pCurEdge->GetActualWeight(), curPNode.nodeID, pCurEdge->GetID());
+			auto neighborPNode = GraphPathingNode(oppositeNodeID, curPNode.pathWeight + pCurEdge->GetActualWeight(), pCurEdge->GetLength(), curPNode.nodeID, pCurEdge->GetID());
 
 			auto foundInSet = std::find_if(visitedSet.begin(), visitedSet.end(),
 				[&oppositeNodeID](const GraphPathingNode& checkNode) {
@@ -436,7 +494,7 @@ GraphRoute GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNod
 
 	auto durationEnd = std::chrono::system_clock::now().time_since_epoch();
 	auto millisEnd = std::chrono::duration_cast<std::chrono::milliseconds>(durationEnd).count();
-	std::cout << "Millis: " << std::to_string((int)(millisEnd - millisStart)) << std::endl;
+	//std::cout << "Millis: " << std::to_string((int)(millisEnd - millisStart)) << std::endl;
 
 	return theRoute;
 }
@@ -468,7 +526,7 @@ void GraphMap::PushToPQ(std::vector<GraphPathingNode>& pq, GraphPathingNode pnod
 	}
 	else
 	{
-		pq.emplace_back(GraphPathingNode(pnode.nodeID, pnode.pathWeight, pnode.prevNodeID, pnode.edgeToPrev));
+		pq.emplace_back(GraphPathingNode(pnode.nodeID, pnode.pathWeight, pnode.pathDistance, pnode.prevNodeID, pnode.edgeToPrev));
 	}
 }
 

@@ -33,19 +33,22 @@ public:
 	GRAPH_NODE_ID prevNodeID;
 	GRAPH_EDGE_ID edgeToPrev;
 	GRAPH_EDGE_WEIGHT pathWeight;
+	double pathDistance;
 
-	GraphPathingNode(GRAPH_NODE_ID nodeID, double pathWeight)
+	GraphPathingNode(GRAPH_NODE_ID nodeID, double pathWeight, double pathDistance)
 	{
 		this->prevNodeID = INVALID_NODE_ID;
 		this->nodeID = nodeID;
 		this->pathWeight = pathWeight;
+		this->pathDistance = pathDistance;
 		this->edgeToPrev = INVALID_EDGE_ID;
 	}
-	GraphPathingNode(GRAPH_NODE_ID nodeID, double pathWeight, GRAPH_NODE_ID prevNodeID, GRAPH_EDGE_ID edgeToPrev)
+	GraphPathingNode(GRAPH_NODE_ID nodeID, double pathWeight, double pathDistance, GRAPH_NODE_ID prevNodeID, GRAPH_EDGE_ID edgeToPrev)
 	{
 		this->prevNodeID = prevNodeID;
 		this->nodeID = nodeID;
 		this->pathWeight = pathWeight;
+		this->pathDistance = pathDistance;
 		this->edgeToPrev = edgeToPrev;
 	}
 

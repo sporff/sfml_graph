@@ -26,6 +26,12 @@ public:
 	const GraphNode*	GetNode(GRAPH_NODE_ID nodeID);
 	const GraphEdge*	GetEdge(GRAPH_EDGE_ID edgeID);
 
+	const GraphNode* GetRandomNode();
+	GRAPH_NODE_ID GetRandomNodeID();
+	const GraphEdge* GetRandomEdge();
+	GRAPH_EDGE_ID GetRandomEdgeID();
+
+
 	const std::tuple<const GraphNode*, const GraphNode*>	GetEdgeNodes(const GraphEdge& edge);
 	std::vector<const GraphEdge*>							FindEdgesConnectedToNode(const GraphNode* pNode);
 	std::vector<const GraphEdge*>							FindEdgesTravelableFromNode(const GraphNode* pNode) const;
@@ -55,7 +61,7 @@ public:
 	void				SelectAllNodes();
 	void				ClearSelectedEdges();
 
-	GraphRoute			FindShortestPath(const GraphNode* startNode, const GraphNode* endNode);
+	GraphRoute			FindShortestPath(const GraphNode* startNode, const GraphNode* endNode, double* pDistance_out=nullptr);
 
 private:
 	GraphVector m_cameraPos;

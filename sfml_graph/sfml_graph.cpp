@@ -337,8 +337,8 @@ int main()
 	GRAPH_NODE_ID addingFromNodeID = INVALID_NODE_ID;
 	MouseMode mouseMode = MouseMode::None;
 
-	routeStartID = 0;
-	routeEndID = 10;
+	routeStartID = graphMap.GetRandomNodeID();
+	routeEndID = graphMap.GetRandomNodeID();
 
 	while (window.isOpen())
 	{
