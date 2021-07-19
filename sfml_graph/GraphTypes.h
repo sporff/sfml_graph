@@ -26,9 +26,7 @@ enum class GRAPH_NODE_COLOR
 const GRAPH_NODE_ID INVALID_NODE_ID = -1;
 const GRAPH_NODE_ID INVALID_EDGE_ID = -1;
 
-class PathingNode;
-
-class PathingNode
+class GraphPathingNode
 {
 public:
 	GRAPH_NODE_ID nodeID;
@@ -36,14 +34,14 @@ public:
 	GRAPH_EDGE_ID edgeToPrev;
 	GRAPH_EDGE_WEIGHT pathWeight;
 
-	PathingNode(GRAPH_NODE_ID nodeID, double pathWeight)
+	GraphPathingNode(GRAPH_NODE_ID nodeID, double pathWeight)
 	{
 		this->prevNodeID = INVALID_NODE_ID;
 		this->nodeID = nodeID;
 		this->pathWeight = pathWeight;
 		this->edgeToPrev = INVALID_EDGE_ID;
 	}
-	PathingNode(GRAPH_NODE_ID nodeID, double pathWeight, GRAPH_NODE_ID prevNodeID, GRAPH_EDGE_ID edgeToPrev)
+	GraphPathingNode(GRAPH_NODE_ID nodeID, double pathWeight, GRAPH_NODE_ID prevNodeID, GRAPH_EDGE_ID edgeToPrev)
 	{
 		this->prevNodeID = prevNodeID;
 		this->nodeID = nodeID;
@@ -51,16 +49,13 @@ public:
 		this->edgeToPrev = edgeToPrev;
 	}
 
-	/*friend bool operator<(const PathingNode& lhs, const PathingNode& rhs)
-	{
-		return lhs.pathWeight < rhs.pathWeight;
-	}*/
+	//bool operator <(const PathingNode& rhs) const
+	//{
+	//	//if (pathWeight < 0.0 && rhs.pathWeight < 0.0)
+	//	//	return this->nodeID < rhs.nodeID;
 
-	bool operator <(const PathingNode& rhs) const
-	{
-		//if (pathWeight < 0.0 && rhs.pathWeight < 0.0)
-		//	return this->nodeID < rhs.nodeID;
-
-		return pathWeight > rhs.pathWeight;
-	}
+	//	return pathWeight > rhs.pathWeight;
+	//}
 };
+
+using GraphRoute = std::vector<GraphPathingNode>;

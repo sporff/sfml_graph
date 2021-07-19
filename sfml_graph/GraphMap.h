@@ -55,7 +55,7 @@ public:
 	void				SelectAllNodes();
 	void				ClearSelectedEdges();
 
-	void				FindShortestPath(const GraphNode* startNode, const GraphNode* endNode);
+	GraphRoute			FindShortestPath(const GraphNode* startNode, const GraphNode* endNode);
 
 private:
 	GraphVector m_cameraPos;
@@ -72,8 +72,8 @@ private:
 
 	std::set<GRAPH_EDGE_ID> m_selectedEdges;
 
-	PathingNode*					FindInPQ(std::vector<PathingNode>& pq, GRAPH_NODE_ID nodeID);
-	void							PushToPQ(std::vector<PathingNode>& pq, PathingNode pnode);
-	std::unique_ptr<PathingNode>	PopFromPQ(std::vector<PathingNode>& pq);
+	GraphPathingNode*					FindInPQ(std::vector<GraphPathingNode>& pq, GRAPH_NODE_ID nodeID);
+	void								PushToPQ(std::vector<GraphPathingNode>& pq, GraphPathingNode pnode);
+	std::unique_ptr<GraphPathingNode>	PopFromPQ(std::vector<GraphPathingNode>& pq);
 };
 
