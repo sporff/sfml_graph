@@ -355,59 +355,6 @@ void GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNode* end
 	if (startNode == nullptr || endNode == nullptr)
 		return;
 
-	/*auto FindInPQ = [&pq](GRAPH_NODE_ID nodeID) -> PathingNode* {
-		for (PathingNode& curPqNode : pq)
-		{
-			if (curPqNode.nodeID == nodeID)
-			{
-				return &curPqNode;
-			}
-		}
-		return nullptr;
-	};
-
-	auto PushToPQ = [&pq, &FindInPQ](PathingNode pnode) -> void {
-		PathingNode* pFindExistingInPq = FindInPQ(pnode.nodeID);
-		if (pFindExistingInPq != nullptr)
-		{
-			if (pFindExistingInPq->pathWeight > pnode.pathWeight)
-			{
-				pFindExistingInPq->pathWeight = pnode.pathWeight;
-				pFindExistingInPq->edgeToPrev = pnode.edgeToPrev;
-				pFindExistingInPq->prevNodeID = pnode.prevNodeID;
-				return;
-			}
-		}
-		else
-		{
-			pq.emplace_back(PathingNode(pnode.nodeID, pnode.pathWeight, pnode.prevNodeID, pnode.edgeToPrev) );
-		}
-	};
-
-	auto PopFromPQ = [&pq]() -> std::unique_ptr<PathingNode> {
-		int bestWeightIndex = -1;
-		double bestWeight = -1.0;
-		std::unique_ptr<PathingNode> retVal;
-
-		for (int i = 0; i < pq.size(); i++)
-		{
-			double curWeight = pq.at(i).pathWeight;
-			if (curWeight < bestWeight || bestWeight < 0.0)
-			{
-				bestWeight = curWeight;
-				bestWeightIndex = i;
-			}
-		}
-
-		if (bestWeightIndex >= 0)
-		{
-			retVal = std::make_unique<PathingNode>(pq[bestWeightIndex]);
-			pq.erase(pq.begin() + bestWeightIndex);
-		}
-
-		return retVal;
-	};*/
-
 	ClearSelectedNodes();
 	PushToPQ( pq, PathingNode(startNode->GetID(), 0.0, INVALID_NODE_ID, INVALID_EDGE_ID) );
 
