@@ -71,5 +71,9 @@ private:
 	std::set<GRAPH_NODE_ID> m_selectedNodes;
 
 	std::set<GRAPH_EDGE_ID> m_selectedEdges;
+
+	PathingNode*					FindInPQ(std::vector<PathingNode>& pq, GRAPH_NODE_ID nodeID);
+	void							PushToPQ(std::vector<PathingNode>& pq, PathingNode pnode);
+	std::unique_ptr<PathingNode>	PopFromPQ(std::vector<PathingNode>& pq);
 };
 

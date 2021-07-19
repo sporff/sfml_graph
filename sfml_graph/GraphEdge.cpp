@@ -2,7 +2,8 @@
 
 GraphEdge::GraphEdge(GRAPH_EDGE_ID id)
 	: m_id(id)
-	, m_length(-1.f)
+	, m_length(-1.0)
+	, m_travelWeight(1.0)
 {
 	m_endPoints[0] = -1;
 	m_endPoints[1] = -1;
@@ -46,6 +47,11 @@ GRAPH_EDGE_DIR GraphEdge::GetDirection() const
 double GraphEdge::GetLength() const
 {
 	return m_length;
+}
+
+double GraphEdge::GetActualWeight() const
+{
+	return m_length * m_travelWeight;
 }
 
 bool GraphEdge::IsEdgeTravelableFromNode(GRAPH_NODE_ID nodeID) const

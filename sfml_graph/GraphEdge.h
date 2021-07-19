@@ -19,6 +19,7 @@ public:
 	GRAPH_NODE_ID GetEndNodeID() const;
 	GRAPH_EDGE_DIR GetDirection() const;
 	double GetLength() const;
+	double GetActualWeight() const;
 	bool IsEdgeTravelableFromNode(GRAPH_NODE_ID nodeID) const;
 	bool ContainsNode(GRAPH_NODE_ID nodeID) const;
 	GRAPH_NODE_ID GetOppositeNodeID(GRAPH_NODE_ID nodeID) const;

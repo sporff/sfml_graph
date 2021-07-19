@@ -337,6 +337,9 @@ int main()
 	GRAPH_NODE_ID addingFromNodeID = INVALID_NODE_ID;
 	MouseMode mouseMode = MouseMode::None;
 
+	routeStartID = 0;
+	routeEndID = 10;
+
 	while (window.isOpen())
 	{
 		sf::Vector2i mousePosInt = sf::Mouse::getPosition(window);

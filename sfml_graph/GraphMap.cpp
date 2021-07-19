@@ -348,57 +348,87 @@ void GraphMap::ClearSelectedEdges()
 
 void GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNode* endNode)
 {
-	std::chrono::time_point<std::chrono::system_clock> now =
-		std::chrono::system_clock::now();
-
-	auto durationStart = now.time_since_epoch();
-	auto millisStart = std::chrono::duration_cast<std::chrono::milliseconds>(durationStart).count();
-
-	std::vector<PathingNode> route;
+	std::vector<PathingNode> pq;
 	std::vector<PathingNode> visitedSet;
-	std::priority_queue<PathingNode> pq;
+	std::vector<PathingNode> route;
 
-	if (!startNode || !endNode)
+	if (startNode == nullptr || endNode == nullptr)
 		return;
 
-	pq.push(PathingNode(startNode->GetID(), 0.f));
-	visitedSet.push_back(pq.top());
+	/*auto FindInPQ = [&pq](GRAPH_NODE_ID nodeID) -> PathingNode* {
+		for (PathingNode& curPqNode : pq)
+		{
+			if (curPqNode.nodeID == nodeID)
+			{
+				return &curPqNode;
+			}
+		}
+		return nullptr;
+	};
+
+	auto PushToPQ = [&pq, &FindInPQ](PathingNode pnode) -> void {
+		PathingNode* pFindExistingInPq = FindInPQ(pnode.nodeID);
+		if (pFindExistingInPq != nullptr)
+		{
+			if (pFindExistingInPq->pathWeight > pnode.pathWeight)
+			{
+				pFindExistingInPq->pathWeight = pnode.pathWeight;
+				pFindExistingInPq->edgeToPrev = pnode.edgeToPrev;
+				pFindExistingInPq->prevNodeID = pnode.prevNodeID;
+				return;
+			}
+		}
+		else
+		{
+			pq.emplace_back(PathingNode(pnode.nodeID, pnode.pathWeight, pnode.prevNodeID, pnode.edgeToPrev) );
+		}
+	};
+
+	auto PopFromPQ = [&pq]() -> std::unique_ptr<PathingNode> {
+		int bestWeightIndex = -1;
+		double bestWeight = -1.0;
+		std::unique_ptr<PathingNode> retVal;
+
+		for (int i = 0; i < pq.size(); i++)
+		{
+			double curWeight = pq.at(i).pathWeight;
+			if (curWeight < bestWeight || bestWeight < 0.0)
+			{
+				bestWeight = curWeight;
+				bestWeightIndex = i;
+			}
+		}
+
+		if (bestWeightIndex >= 0)
+		{
+			retVal = std::make_unique<PathingNode>(pq[bestWeightIndex]);
+			pq.erase(pq.begin() + bestWeightIndex);
+		}
+
+		return retVal;
+	};*/
+
+	ClearSelectedNodes();
+	PushToPQ( pq, PathingNode(startNode->GetID(), 0.0, INVALID_NODE_ID, INVALID_EDGE_ID) );
 
 	while (!pq.empty())
 	{
-		PathingNode curNode = pq.top();
+		auto pqTop = PopFromPQ(pq);
+		PathingNode curPNode = *pqTop;
 
-		auto foundInSet = std::find_if(visitedSet.begin(), visitedSet.end(),
-			[&curNode](const PathingNode& checkNode) { return (checkNode.nodeID == curNode.nodeID); }
-		);
+		visitedSet.push_back(curPNode);
+		AddSelectedNode(curPNode.nodeID);
 
-		if (foundInSet == visitedSet.end())
-			break;
-		curNode = *foundInSet;
-
-		pq.pop();
-
-		//std::cout << "Visiting: " << curNode.nodeID << "\n";
-
-		visitedSet.push_back(curNode);
-
-		auto pCurNode = GetNode(curNode.nodeID);
-		auto aTravelableEdges = FindEdgesTravelableFromNode(pCurNode);
-
-
-		/********** Found it ? ***********/
-		if (pCurNode->GetID() == endNode->GetID())
+		if (curPNode.nodeID == endNode->GetID())
 		{
-			//std::cout << "Found end: " << curNode.nodeID << "\n";
-
-			PathingNode* curInRoute = &curNode;
+			PathingNode* curInRoute = &curPNode;
 			while (curInRoute)
 			{
 				route.push_back(*curInRoute);
 				auto foundInSet = std::find_if(visitedSet.begin(), visitedSet.end(),
 					[&curInRoute](const PathingNode& checkNode) { return (checkNode.nodeID == curInRoute->prevNodeID); }
 				);
-
+			
 				if (foundInSet != visitedSet.end())
 				{
 					curInRoute = &(*foundInSet);
@@ -406,41 +436,39 @@ void GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNode* end
 				else
 					curInRoute = nullptr;
 			}
+
 			break;
 		}
-		/*********************************/
+
+		auto pCurNode = GetNode(curPNode.nodeID);
+		auto aTravelableEdges = FindEdgesTravelableFromNode((const GraphNode*)&curPNode);
 
 		for (const GraphEdge* pCurEdge : aTravelableEdges)
 		{
-			GRAPH_NODE_ID oppositeNodeID = pCurEdge->GetOppositeNodeID(curNode.nodeID);
-
-			auto neighborNode = PathingNode(oppositeNodeID, curNode.pathWeight + pCurEdge->GetLength(), curNode.nodeID, pCurEdge->GetID());
+			GRAPH_NODE_ID oppositeNodeID = pCurEdge->GetOppositeNodeID(curPNode.nodeID);
+			auto neighborPNode = PathingNode(oppositeNodeID, curPNode.pathWeight + pCurEdge->GetActualWeight(), curPNode.nodeID, pCurEdge->GetID());
 
 			auto foundInSet = std::find_if(visitedSet.begin(), visitedSet.end(),
 				[&oppositeNodeID](const PathingNode& checkNode) {
 					return checkNode.nodeID == oppositeNodeID;
 				}
 			);
-
+				
 			if (foundInSet == visitedSet.end())
 			{
-				//std::cout << "  Child: " << oppositeNodeID << "\n";
-				pq.push(neighborNode);
-				visitedSet.push_back(neighborNode);
+				PushToPQ(pq, neighborPNode);
 			}
-			else if (foundInSet->pathWeight > neighborNode.pathWeight)
+			else
 			{
-				foundInSet->pathWeight = neighborNode.pathWeight;
-				foundInSet->prevNodeID = curNode.nodeID;
-				foundInSet->edgeToPrev = pCurEdge->GetID();
-				//std::cout << "  X Child: " << oppositeNodeID << "\n";
+
 			}
 		}
 	}
 
+	// Temporary
+	ClearSelectedEdges();
 	if (!route.empty())
 	{
-		ClearSelectedEdges();
 		//std::cout << "Route:";
 		for (auto curPathingNode : route)
 		{
@@ -453,11 +481,60 @@ void GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNode* end
 	{
 		//std::cout << "Unable to calculate route!\n";
 	}
+}
 
-	auto durationEnd = std::chrono::system_clock::now().time_since_epoch();
-	auto millisEnd = std::chrono::duration_cast<std::chrono::milliseconds>(durationEnd).count();
+PathingNode* GraphMap::FindInPQ(std::vector<PathingNode>& pq, GRAPH_NODE_ID nodeID)
+{
+	for (PathingNode& curPqNode : pq)
+	{
+		if (curPqNode.nodeID == nodeID)
+		{
+			return &curPqNode;
+		}
+	}
+	return nullptr;
+}
 
-	std::cout << "Millis: " << std::to_string((int)(millisEnd - millisStart)) << std::endl;
+void GraphMap::PushToPQ(std::vector<PathingNode>& pq, PathingNode pnode)
+{
+	PathingNode* pFindExistingInPq = FindInPQ(pq, pnode.nodeID);
+	if (pFindExistingInPq != nullptr)
+	{
+		if (pFindExistingInPq->pathWeight > pnode.pathWeight)
+		{
+			pFindExistingInPq->pathWeight = pnode.pathWeight;
+			pFindExistingInPq->edgeToPrev = pnode.edgeToPrev;
+			pFindExistingInPq->prevNodeID = pnode.prevNodeID;
+			return;
+		}
+	}
+	else
+	{
+		pq.emplace_back(PathingNode(pnode.nodeID, pnode.pathWeight, pnode.prevNodeID, pnode.edgeToPrev));
+	}
+}
 
-	return;
+std::unique_ptr<PathingNode> GraphMap::PopFromPQ(std::vector<PathingNode>& pq)
+{
+	int bestWeightIndex = -1;
+	double bestWeight = -1.0;
+	std::unique_ptr<PathingNode> retVal;
+
+	for (int i = 0; i < pq.size(); i++)
+	{
+		double curWeight = pq.at(i).pathWeight;
+		if (curWeight < bestWeight || bestWeight < 0.0)
+		{
+			bestWeight = curWeight;
+			bestWeightIndex = i;
+		}
+	}
+
+	if (bestWeightIndex >= 0)
+	{
+		retVal = std::make_unique<PathingNode>(pq[bestWeightIndex]);
+		pq.erase(pq.begin() + bestWeightIndex);
+	}
+
+	return retVal;
 }
