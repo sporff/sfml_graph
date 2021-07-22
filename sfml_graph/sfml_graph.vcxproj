@@ -152,12 +152,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GraphEdge.cpp" />
+    <ClCompile Include="GraphEdgeEntity.cpp" />
     <ClCompile Include="GraphMap.cpp" />
     <ClCompile Include="GraphNode.cpp" />
     <ClCompile Include="sfml_graph.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GraphEdge.h" />
+    <ClInclude Include="GraphEdgeEntity.h" />
     <ClInclude Include="GraphMap.h" />
     <ClInclude Include="GraphNode.h" />
     <ClInclude Include="GraphTypes.h" />
