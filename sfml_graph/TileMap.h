@@ -1,4 +1,8 @@
 #pragma once
+
+#include <vector>
+#include "TileCell.h"
+
 class TileMap
 {
 public:
@@ -11,5 +15,6 @@ public:
 private:
 	int m_width;
 	int m_height;
+	std::vector<TileCell> m_map;
 };
 

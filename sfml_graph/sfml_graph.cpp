@@ -5,10 +5,14 @@
 #include "GraphNode.h"
 #include "GraphEdge.h"
 #include "GraphMap.h"
+#include "TileMap.h"
 
 int main()
 {
 	GraphMap graphMap;
+	TileMap tileMap;
+	tileMap.CreateMap(10, 10);
+
 	//graphMap.AddNodes(
 	//	{
 	//		/*{100,100}
