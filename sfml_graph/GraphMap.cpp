@@ -412,7 +412,6 @@ GRAPH_ROUTE GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNo
 	if (startNode == nullptr || endNode == nullptr)
 		return theRoute;
 
-	//ClearSelectedNodes();
 	PushToPQ( pq, GraphPathTracker(startNode->GetID(), 0.0, 0.0, INVALID_NODE_ID, INVALID_EDGE_ID) );
 
 	while (!pq.empty())
@@ -481,6 +480,7 @@ GRAPH_ROUTE GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNo
 	}
 
 	// Temporary
+	ClearSelectedNodes();
 	ClearSelectedEdges();
 	if (!theRoute.empty())
 	{
@@ -488,8 +488,8 @@ GRAPH_ROUTE GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNo
 		for (auto curPathingNode : theRoute)
 		{
 			//std::cout << " " << curInRoute->nodeID;
-			//AddSelectedNode(curPathingNode.nodeID);
-			//AddSelectedEdge(curPathingNode.edgeToPrev);
+			AddSelectedNode(curPathingNode.nodeID);
+			AddSelectedEdge(curPathingNode.edgeID);
 		}
 	}
 	else
