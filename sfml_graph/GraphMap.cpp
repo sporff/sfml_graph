@@ -1,3 +1,4 @@
+#include "GraphTypes.h"
 #include "GraphMap.h"
 #include <string>
 #include <iostream>
@@ -7,10 +8,7 @@
 #include <time.h>
 
 GraphMap::GraphMap()
-	: m_cameraPos{ 0.f, 0.f }
-	, m_cameraRotation(0.f)
-	, m_cameraScale(1.f)
-	, m_nextNodeID(0)
+	: m_nextNodeID(0)
 	, m_nextEdgeID(0)
 {
 	srand((unsigned int)time(NULL));
@@ -247,7 +245,7 @@ GraphVector GraphMap::WorldToScreen(GraphVector worldVector)
 	return worldVector;
 }
 
-bool GraphMap::RenderNodes(sf::RenderWindow& window)
+bool GraphMap::RenderNodes(RenderData& renderData)
 {
 	for (const std::pair<const GRAPH_NODE_ID, GraphNode>& curNodePair : m_nodeMap)
 	{
@@ -260,13 +258,13 @@ bool GraphMap::RenderNodes(sf::RenderWindow& window)
 		else if (m_selectedNodes.find(curNodePair.first) != m_selectedNodes.end())
 			color = GRAPH_NODE_COLOR::Selected;
 
-		curNode.Draw(window, GraphVector(0.f, 0.f), 0.f, 0.f, color);
+		curNode.Draw(renderData.window, GraphVector(0.f, 0.f), 0.f, 0.f, color);
 	}
 
 	return true;
 }
 
-bool GraphMap::RenderEdges(sf::RenderWindow& window)
+bool GraphMap::RenderEdges(RenderData& renderData)
 {
 	for (const std::pair<const GRAPH_EDGE_ID, GraphEdge>& curEdgePair : m_edgeMap)
 	{
@@ -280,20 +278,20 @@ bool GraphMap::RenderEdges(sf::RenderWindow& window)
 			color = GRAPH_NODE_COLOR::Selected;
 
 		if (node1 && node2)
-			curEdge.Draw(window, GraphVector(0.f, 0.f), 0.f, 0.f, *node1, *node2, color);
+			curEdge.Draw(renderData, *node1, *node2, color);
 	}
 
 	return true;
 }
 
-bool GraphMap::RenderLine(sf::RenderWindow& window, GraphVector startPos, GraphVector endPos)
+bool GraphMap::RenderLine(RenderData& renderData, GraphVector startPos, GraphVector endPos)
 {
 	sf::Vertex line[] =
 	{
 		sf::Vertex(startPos),
 		sf::Vertex(endPos)
 	};
-	window.draw(line, 2, sf::Lines);
+	renderData.window.draw(line, 2, sf::Lines);
 
 	return true;
 }

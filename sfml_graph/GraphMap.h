@@ -44,9 +44,9 @@ public:
 	GraphVector			ScreenToWorld(GraphVector screenVector);
 	GraphVector			WorldToScreen(GraphVector worldVector);
 
-	bool RenderNodes(sf::RenderWindow& window);
-	bool RenderEdges(sf::RenderWindow& window);
-	bool RenderLine(sf::RenderWindow& window, GraphVector startPos, GraphVector endPos);
+	bool RenderNodes(RenderData& renderData);
+	bool RenderEdges(RenderData& renderData);
+	bool RenderLine(RenderData& renderData, GraphVector startPos, GraphVector endPos);
 
 	void				AddHighlightedNode(GRAPH_NODE_ID nodeID);
 	void				ClearHighlightedNodes();
@@ -64,10 +64,6 @@ public:
 	GraphRoute			FindShortestPath(const GraphNode* startNode, const GraphNode* endNode, double* pDistance_out=nullptr);
 
 private:
-	GraphVector m_cameraPos;
-	float m_cameraRotation;
-	float m_cameraScale;
-
 	GraphNodeMap m_nodeMap;
 	GraphEdgeMap m_edgeMap;
 	GRAPH_NODE_ID m_nextNodeID;

@@ -156,6 +156,8 @@
     <ClCompile Include="GraphMap.cpp" />
     <ClCompile Include="GraphNode.cpp" />
     <ClCompile Include="sfml_graph.cpp" />
+    <ClCompile Include="TileCell.cpp" />
+    <ClCompile Include="TileMap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GraphEdge.h" />
@@ -163,6 +165,8 @@
     <ClInclude Include="GraphMap.h" />
     <ClInclude Include="GraphNode.h" />
     <ClInclude Include="GraphTypes.h" />
+    <ClInclude Include="TileCell.h" />
+    <ClInclude Include="TileMap.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
