@@ -506,6 +506,7 @@ int main()
 		}
 
 		window.clear();
+		RenderData renderData{ window, {0.f, 0.f}, 1.f, 0.f };
 
 		if (routeStartID != INVALID_NODE_ID && routeEndID != INVALID_NODE_ID)
 			graphMap.FindShortestPath(graphMap.GetNode(routeStartID), graphMap.GetNode(routeEndID));
@@ -514,12 +515,13 @@ int main()
 		{
 			const GraphNode* addingFrom = graphMap.GetNode(addingFromNodeID);
 			if (addingFrom)
-				graphMap.RenderLine(window, addingFrom->GetPos(), mousePos);
+				graphMap.RenderLine(renderData, addingFrom->GetPos(), mousePos);
 			else
 				mouseMode = MouseMode::None;
 		}
-		graphMap.RenderNodes(window);
-		graphMap.RenderEdges(window);
+
+		graphMap.RenderNodes(renderData);
+		graphMap.RenderEdges(renderData);
 
 		//std::cout << mousePos.x << ", " << mousePos.y << "\n";
 		///shape.setPosition((int)mousePos.x, (int)mousePos.y);

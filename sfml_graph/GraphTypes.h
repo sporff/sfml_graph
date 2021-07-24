@@ -1,4 +1,6 @@
 #pragma once
+
+#include <SFML/Graphics.hpp>
 #include <SFML/System/Vector2.hpp>
 
 using GRAPH_ID = long long;
@@ -62,3 +64,11 @@ public:
 };
 
 using GraphRoute = std::vector<GraphPathingNode>;
+
+struct RenderData
+{
+	sf::RenderWindow& window;
+	GraphVector cameraPos;
+	float cameraScale;
+	float cameraRotation; 
+};

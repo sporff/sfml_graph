@@ -95,7 +95,7 @@ GRAPH_NODE_ID GraphEdge::GetOppositeNodeID(GRAPH_NODE_ID nodeID) const
 	return INVALID_NODE_ID;
 }
 
-bool GraphEdge::Draw(sf::RenderWindow& window, GraphVector cameraPos, float cameraScale, float cameraRotation, const GraphNode& node1, const GraphNode& node2, GRAPH_NODE_COLOR color)
+bool GraphEdge::Draw(RenderData& renderData, const GraphNode& node1, const GraphNode& node2, GRAPH_NODE_COLOR color)
 {	
 	sf::Color sfColor = sf::Color::White;
 	switch (color)
@@ -116,7 +116,7 @@ bool GraphEdge::Draw(sf::RenderWindow& window, GraphVector cameraPos, float came
 		sf::Vertex(node1.GetPos(), sfColor),
 		sf::Vertex(node2.GetPos(), sfColor)
 	};
-	window.draw(line, 2, sf::Lines);
+	renderData.window.draw(line, 2, sf::Lines);
 	return true;
 }
 
