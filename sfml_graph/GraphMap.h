@@ -37,16 +37,16 @@ public:
 	std::vector<const GraphEdge*>							FindEdgesTravelableFromNode(const GraphNode* pNode) const;
 
 	double									GetDistanceBetweenNodes(const GraphNode& node1, const GraphNode& node2) const;
-	double									GetDistanceToNode(const GraphVector& pos, const GraphNode& node);
-	std::tuple<const GraphNode*, double>	FindClosestNode(const GraphVector& pos);
+	double									GetDistanceToNode(const GRAPH_VECTOR& pos, const GraphNode& node);
+	std::tuple<const GraphNode*, double>	FindClosestNode(const GRAPH_VECTOR& pos);
 	double									GetEdgeLength(const GraphEdge& edge);
 
-	GraphVector			ScreenToWorld(GraphVector screenVector);
-	GraphVector			WorldToScreen(GraphVector worldVector);
+	GRAPH_VECTOR			ScreenToWorld(GRAPH_VECTOR screenVector);
+	GRAPH_VECTOR			WorldToScreen(GRAPH_VECTOR worldVector);
 
 	bool RenderNodes(RenderData& renderData);
 	bool RenderEdges(RenderData& renderData);
-	bool RenderLine(RenderData& renderData, GraphVector startPos, GraphVector endPos);
+	bool RenderLine(RenderData& renderData, GRAPH_VECTOR startPos, GRAPH_VECTOR endPos);
 
 	void				AddHighlightedNode(GRAPH_NODE_ID nodeID);
 	void				ClearHighlightedNodes();
@@ -61,7 +61,7 @@ public:
 	void				SelectAllNodes();
 	void				ClearSelectedEdges();
 
-	GraphRoute			FindShortestPath(const GraphNode* startNode, const GraphNode* endNode, double* pDistance_out=nullptr);
+	GRAPH_ROUTE			FindShortestPath(const GraphNode* startNode, const GraphNode* endNode, double* pDistance_out=nullptr);
 
 private:
 	GraphNodeMap m_nodeMap;
@@ -74,8 +74,8 @@ private:
 
 	std::set<GRAPH_EDGE_ID> m_selectedEdges;
 
-	GraphPathingNode*					FindInPQ(std::vector<GraphPathingNode>& pq, GRAPH_NODE_ID nodeID);
-	void								PushToPQ(std::vector<GraphPathingNode>& pq, GraphPathingNode pnode);
-	std::unique_ptr<GraphPathingNode>	PopFromPQ(std::vector<GraphPathingNode>& pq);
+	GraphPathTracker*					FindInPQ(std::vector<GraphPathTracker>& pq, GRAPH_NODE_ID nodeID);
+	void								PushToPQ(std::vector<GraphPathTracker>& pq, GraphPathTracker pnode);
+	std::unique_ptr<GraphPathTracker>	PopFromPQ(std::vector<GraphPathTracker>& pq);
 };
 

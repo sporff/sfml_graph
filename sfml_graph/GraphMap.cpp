@@ -191,22 +191,22 @@ std::vector<const GraphEdge*> GraphMap::FindEdgesTravelableFromNode(const GraphN
 
 double GraphMap::GetDistanceBetweenNodes(const GraphNode& node1, const GraphNode& node2) const
 {
-	GraphVector node1pos = node1.GetPos();
-	GraphVector node2pos = node2.GetPos();
+	GRAPH_VECTOR node1pos = node1.GetPos();
+	GRAPH_VECTOR node2pos = node2.GetPos();
 
-	GraphVector dirVec = GraphVector(node2pos.x - node1pos.x, node2pos.y - node1pos.y);
+	GRAPH_VECTOR dirVec = GRAPH_VECTOR(node2pos.x - node1pos.x, node2pos.y - node1pos.y);
 	return std::sqrt(dirVec.x * dirVec.x + dirVec.y*dirVec.y);
 }
 
-double GraphMap::GetDistanceToNode(const GraphVector& pos, const GraphNode& node)
+double GraphMap::GetDistanceToNode(const GRAPH_VECTOR& pos, const GraphNode& node)
 {
-	GraphVector nodePos = node.GetPos();
+	GRAPH_VECTOR nodePos = node.GetPos();
 
-	GraphVector dirVec = GraphVector(pos.x - nodePos.x, pos.y - nodePos.y);
+	GRAPH_VECTOR dirVec = GRAPH_VECTOR(pos.x - nodePos.x, pos.y - nodePos.y);
 	return std::sqrt(dirVec.x * dirVec.x + dirVec.y * dirVec.y);
 }
 
-std::tuple<const GraphNode*, double> GraphMap::FindClosestNode(const GraphVector& pos)
+std::tuple<const GraphNode*, double> GraphMap::FindClosestNode(const GRAPH_VECTOR& pos)
 {
 	const GraphNode* closestNode = nullptr;
 	double closestDis = -1.0;
@@ -235,12 +235,12 @@ double GraphMap::GetEdgeLength(const GraphEdge& edge)
 	return GetDistanceBetweenNodes(*node1, *node2);
 }
 
-GraphVector GraphMap::ScreenToWorld(GraphVector screenVector)
+GRAPH_VECTOR GraphMap::ScreenToWorld(GRAPH_VECTOR screenVector)
 {
 	return screenVector;
 }
 
-GraphVector GraphMap::WorldToScreen(GraphVector worldVector)
+GRAPH_VECTOR GraphMap::WorldToScreen(GRAPH_VECTOR worldVector)
 {
 	return worldVector;
 }
@@ -258,7 +258,7 @@ bool GraphMap::RenderNodes(RenderData& renderData)
 		else if (m_selectedNodes.find(curNodePair.first) != m_selectedNodes.end())
 			color = GRAPH_NODE_COLOR::Selected;
 
-		curNode.Draw(renderData.window, GraphVector(0.f, 0.f), 0.f, 0.f, color);
+		curNode.Draw(renderData.window, GRAPH_VECTOR(0.f, 0.f), 0.f, 0.f, color);
 	}
 
 	return true;
@@ -284,7 +284,7 @@ bool GraphMap::RenderEdges(RenderData& renderData)
 	return true;
 }
 
-bool GraphMap::RenderLine(RenderData& renderData, GraphVector startPos, GraphVector endPos)
+bool GraphMap::RenderLine(RenderData& renderData, GRAPH_VECTOR startPos, GRAPH_VECTOR endPos)
 {
 	sf::Vertex line[] =
 	{
@@ -397,50 +397,57 @@ void GraphMap::ClearSelectedEdges()
 	m_selectedEdges.clear();
 }
 
-GraphRoute GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNode* endNode, double* pDistance_out)
+GRAPH_ROUTE GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNode* endNode, double* pDistance_out)
 {
 	std::chrono::time_point<std::chrono::system_clock> now =
 		std::chrono::system_clock::now();
 	auto durationStart = now.time_since_epoch();
 
 	auto millisStart = std::chrono::duration_cast<std::chrono::milliseconds>(durationStart).count();
-	std::vector<GraphPathingNode> pq;
-	std::vector<GraphPathingNode> visitedSet;
-	GraphRoute theRoute;
+	std::vector<GraphPathTracker> pq;
+	std::vector<GraphPathTracker> visitedSet;
+	GRAPH_ROUTE theRoute;
+	std::vector<GRAPH_EDGE_ID> edges;	// Temporary
 
 	if (startNode == nullptr || endNode == nullptr)
 		return theRoute;
 
 	//ClearSelectedNodes();
-	PushToPQ( pq, GraphPathingNode(startNode->GetID(), 0.0, 0.0, INVALID_NODE_ID, INVALID_EDGE_ID) );
+	PushToPQ( pq, GraphPathTracker(startNode->GetID(), 0.0, 0.0, INVALID_NODE_ID, INVALID_EDGE_ID) );
 
 	while (!pq.empty())
 	{
 		auto pqTop = PopFromPQ(pq);
-		GraphPathingNode curPNode = *pqTop;
+		GraphPathTracker curPNode = *pqTop;
 
 		visitedSet.push_back(curPNode);
 		//AddSelectedNode(curPNode.nodeID);
 
+		// Found
 		if (curPNode.nodeID == endNode->GetID())
 		{
 			double routeDistance = 0.0;
-			GraphPathingNode* curInRoute = &curPNode;
+			GraphPathTracker* curInRoute = &curPNode;
+			GRAPH_EDGE_ID nextEdgeID = INVALID_EDGE_ID;
+
 			while (curInRoute)
 			{
-				theRoute.push_back(*curInRoute);
+				theRoute.push_back({ curInRoute->nodeID, nextEdgeID });
 				auto foundInSet = std::find_if(visitedSet.begin(), visitedSet.end(),
-					[&curInRoute](const GraphPathingNode& checkNode) { return (checkNode.nodeID == curInRoute->prevNodeID); }
+					[&curInRoute](const GraphPathTracker& checkNode) { return (checkNode.nodeID == curInRoute->prevNodeID); }
 				);
 			
 				if (foundInSet != visitedSet.end())
 				{
 					routeDistance += curInRoute->pathDistance;
+					nextEdgeID = curInRoute->edgeFromPrev;
 					curInRoute = &(*foundInSet);
 				}
 				else
 					curInRoute = nullptr;
 			}
+
+			std::reverse(theRoute.begin(), theRoute.end());
 
 			if (pDistance_out != nullptr)
 				*pDistance_out = routeDistance;
@@ -454,10 +461,10 @@ GraphRoute GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNod
 		for (const GraphEdge* pCurEdge : aTravelableEdges)
 		{
 			GRAPH_NODE_ID oppositeNodeID = pCurEdge->GetOppositeNodeID(curPNode.nodeID);
-			auto neighborPNode = GraphPathingNode(oppositeNodeID, curPNode.pathWeight + pCurEdge->GetActualWeight(), pCurEdge->GetLength(), curPNode.nodeID, pCurEdge->GetID());
+			auto neighborPNode = GraphPathTracker(oppositeNodeID, curPNode.pathWeight + pCurEdge->GetActualWeight(), pCurEdge->GetLength(), curPNode.nodeID, pCurEdge->GetID());
 
 			auto foundInSet = std::find_if(visitedSet.begin(), visitedSet.end(),
-				[&oppositeNodeID](const GraphPathingNode& checkNode) {
+				[&oppositeNodeID](const GraphPathTracker& checkNode) {
 					return checkNode.nodeID == oppositeNodeID;
 				}
 			);
@@ -482,7 +489,7 @@ GraphRoute GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNod
 		{
 			//std::cout << " " << curInRoute->nodeID;
 			//AddSelectedNode(curPathingNode.nodeID);
-			AddSelectedEdge(curPathingNode.edgeToPrev);
+			//AddSelectedEdge(curPathingNode.edgeToPrev);
 		}
 	}
 	else
@@ -497,9 +504,9 @@ GraphRoute GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNod
 	return theRoute;
 }
 
-GraphPathingNode* GraphMap::FindInPQ(std::vector<GraphPathingNode>& pq, GRAPH_NODE_ID nodeID)
+GraphPathTracker* GraphMap::FindInPQ(std::vector<GraphPathTracker>& pq, GRAPH_NODE_ID nodeID)
 {
-	for (GraphPathingNode& curPqNode : pq)
+	for (GraphPathTracker& curPqNode : pq)
 	{
 		if (curPqNode.nodeID == nodeID)
 		{
@@ -509,30 +516,30 @@ GraphPathingNode* GraphMap::FindInPQ(std::vector<GraphPathingNode>& pq, GRAPH_NO
 	return nullptr;
 }
 
-void GraphMap::PushToPQ(std::vector<GraphPathingNode>& pq, GraphPathingNode pnode)
+void GraphMap::PushToPQ(std::vector<GraphPathTracker>& pq, GraphPathTracker pnode)
 {
-	GraphPathingNode* pFindExistingInPq = FindInPQ(pq, pnode.nodeID);
+	GraphPathTracker* pFindExistingInPq = FindInPQ(pq, pnode.nodeID);
 	if (pFindExistingInPq != nullptr)
 	{
 		if (pFindExistingInPq->pathWeight > pnode.pathWeight)
 		{
 			pFindExistingInPq->pathWeight = pnode.pathWeight;
-			pFindExistingInPq->edgeToPrev = pnode.edgeToPrev;
+			pFindExistingInPq->edgeFromPrev = pnode.edgeFromPrev;
 			pFindExistingInPq->prevNodeID = pnode.prevNodeID;
 			return;
 		}
 	}
 	else
 	{
-		pq.emplace_back(GraphPathingNode(pnode.nodeID, pnode.pathWeight, pnode.pathDistance, pnode.prevNodeID, pnode.edgeToPrev));
+		pq.emplace_back(GraphPathTracker(pnode.nodeID, pnode.pathWeight, pnode.pathDistance, pnode.prevNodeID, pnode.edgeFromPrev));
 	}
 }
 
-std::unique_ptr<GraphPathingNode> GraphMap::PopFromPQ(std::vector<GraphPathingNode>& pq)
+std::unique_ptr<GraphPathTracker> GraphMap::PopFromPQ(std::vector<GraphPathTracker>& pq)
 {
 	int bestWeightIndex = -1;
 	double bestWeight = -1.0;
-	std::unique_ptr<GraphPathingNode> retVal;
+	std::unique_ptr<GraphPathTracker> retVal;
 
 	for (int i = 0; i < pq.size(); i++)
 	{
@@ -546,7 +553,7 @@ std::unique_ptr<GraphPathingNode> GraphMap::PopFromPQ(std::vector<GraphPathingNo
 
 	if (bestWeightIndex >= 0)
 	{
-		retVal = std::make_unique<GraphPathingNode>(pq[bestWeightIndex]);
+		retVal = std::make_unique<GraphPathTracker>(pq[bestWeightIndex]);
 		pq.erase(pq.begin() + bestWeightIndex);
 	}
 

@@ -7,7 +7,7 @@ using GRAPH_ID = long long;
 using GRAPH_NODE_ID = GRAPH_ID;
 using GRAPH_EDGE_ID = GRAPH_ID;
 using GRAPH_EDGE_WEIGHT = double;
-using GraphVector = sf::Vector2f;
+using GRAPH_VECTOR = sf::Vector2f;
 
 enum class GRAPH_EDGE_DIR
 {
@@ -28,33 +28,33 @@ enum class GRAPH_NODE_COLOR
 const GRAPH_NODE_ID INVALID_NODE_ID = -1;
 const GRAPH_NODE_ID INVALID_EDGE_ID = -1;
 
-class GraphPathingNode
+class GraphPathTracker
 {
 public:
 	GRAPH_NODE_ID nodeID;
 	GRAPH_NODE_ID prevNodeID;
-	GRAPH_EDGE_ID edgeToPrev;
+	GRAPH_EDGE_ID edgeFromPrev;
 	GRAPH_EDGE_WEIGHT pathWeight;
 	double pathDistance;
 
-	GraphPathingNode(GRAPH_NODE_ID nodeID, double pathWeight, double pathDistance)
+	GraphPathTracker(GRAPH_NODE_ID nodeID, double pathWeight, double pathDistance)
 	{
 		this->prevNodeID = INVALID_NODE_ID;
 		this->nodeID = nodeID;
 		this->pathWeight = pathWeight;
 		this->pathDistance = pathDistance;
-		this->edgeToPrev = INVALID_EDGE_ID;
+		this->edgeFromPrev = INVALID_EDGE_ID;
 	}
-	GraphPathingNode(GRAPH_NODE_ID nodeID, double pathWeight, double pathDistance, GRAPH_NODE_ID prevNodeID, GRAPH_EDGE_ID edgeToPrev)
+	GraphPathTracker(GRAPH_NODE_ID nodeID, double pathWeight, double pathDistance, GRAPH_NODE_ID prevNodeID, GRAPH_EDGE_ID edgeToPrev)
 	{
 		this->prevNodeID = prevNodeID;
 		this->nodeID = nodeID;
 		this->pathWeight = pathWeight;
 		this->pathDistance = pathDistance;
-		this->edgeToPrev = edgeToPrev;
+		this->edgeFromPrev = edgeToPrev;
 	}
 
-	//bool operator <(const PathingNode& rhs) const
+	//bool operator <(const GraphPathTracker& rhs) const
 	//{
 	//	//if (pathWeight < 0.0 && rhs.pathWeight < 0.0)
 	//	//	return this->nodeID < rhs.nodeID;
@@ -63,12 +63,19 @@ public:
 	//}
 };
 
-using GraphRoute = std::vector<GraphPathingNode>;
+struct GraphPathNode
+{
+	GRAPH_NODE_ID nodeID;
+	GRAPH_EDGE_ID edgeID;
+};
+
+using GRAPH_PATHING_ROUTE = std::vector<GraphPathTracker>;
+using GRAPH_ROUTE = std::vector<GraphPathNode>;
 
 struct RenderData
 {
 	sf::RenderWindow& window;
-	GraphVector cameraPos;
+	GRAPH_VECTOR cameraPos;
 	float cameraScale;
 	float cameraRotation; 
 };

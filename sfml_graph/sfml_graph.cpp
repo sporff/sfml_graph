@@ -347,7 +347,7 @@ int main()
 	while (window.isOpen())
 	{
 		sf::Vector2i mousePosInt = sf::Mouse::getPosition(window);
-		GraphVector mousePos((float)mousePosInt.x, (float)mousePosInt.y);
+		GRAPH_VECTOR mousePos((float)mousePosInt.x, (float)mousePosInt.y);
 
 		sf::Event event;
 		while (window.pollEvent(event))
@@ -524,7 +524,7 @@ int main()
 		graphMap.RenderEdges(renderData);
 
 		//std::cout << mousePos.x << ", " << mousePos.y << "\n";
-		///shape.setPosition((int)mousePos.x, (int)mousePos.y);
+		//shape.setPosition((int)mousePos.x, (int)mousePos.y);
 		//window.draw(shape);
 
 		window.display();
