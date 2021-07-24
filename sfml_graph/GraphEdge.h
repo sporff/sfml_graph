@@ -24,7 +24,7 @@ public:
 	bool ContainsNode(GRAPH_NODE_ID nodeID) const;
 	GRAPH_NODE_ID GetOppositeNodeID(GRAPH_NODE_ID nodeID) const;
 
-	bool Draw(sf::RenderWindow& window, GraphVector cameraPos, float cameraScale, float cameraRotation, const GraphNode& node1, const GraphNode& node2, GRAPH_NODE_COLOR color = GRAPH_NODE_COLOR::Normal);
+	bool Draw(RenderData& renderData, const GraphNode& node1, const GraphNode& node2, GRAPH_NODE_COLOR color = GRAPH_NODE_COLOR::Normal);
 
 private:
 	GRAPH_EDGE_ID m_id;
