@@ -5,6 +5,7 @@
 #include "GraphNode.h"
 #include "GraphEdge.h"
 #include "GraphMap.h"
+#include "GraphEdgeEntity.h"
 #include "TileMap.h"
 
 int main()
@@ -344,6 +345,12 @@ int main()
 	routeStartID = graphMap.GetRandomNodeID();
 	routeEndID = graphMap.GetRandomNodeID();
 
+	GraphEdgeEntity testEdgeEntity;
+	testEdgeEntity.SetRoute({ { 0, 0 }, { 1, 37 }, { 2, INVALID_EDGE_ID } });
+	testEdgeEntity.SetRoute({ { 0, 0 }, { 1, 37 }, { 2, 37 }, {3, INVALID_EDGE_ID} });
+	testEdgeEntity.SetDistanceFromPrev(20.f);
+	graphMap.AddEdgeEntity(testEdgeEntity);
+
 	while (window.isOpen())
 	{
 		sf::Vector2i mousePosInt = sf::Mouse::getPosition(window);
@@ -522,6 +529,7 @@ int main()
 
 		graphMap.RenderNodes(renderData);
 		graphMap.RenderEdges(renderData);
+		graphMap.RenderEdgeEntities(renderData);
 
 		//std::cout << mousePos.x << ", " << mousePos.y << "\n";
 		//shape.setPosition((int)mousePos.x, (int)mousePos.y);

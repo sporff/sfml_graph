@@ -34,7 +34,7 @@ const GRAPH_VECTOR& GraphNode::GetPos() const
 	return m_pos;
 }
 
-void GraphNode::Draw(sf::RenderWindow& window, GRAPH_VECTOR cameraPos, float cameraScale, float cameraRotation, GRAPH_NODE_COLOR color)
+void GraphNode::Draw(RenderData& renderData, GRAPH_NODE_COLOR color)
 {
 	sf::CircleShape shape(5.f);
 	shape.setPosition(GRAPH_VECTOR(m_pos.x - 5.f, m_pos.y - 5.f));
@@ -53,5 +53,5 @@ void GraphNode::Draw(sf::RenderWindow& window, GRAPH_VECTOR cameraPos, float cam
 		break;
 	}
 		
-	window.draw(shape);
+	renderData.window.draw(shape);
 }

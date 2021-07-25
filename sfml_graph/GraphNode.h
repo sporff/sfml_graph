@@ -17,7 +17,7 @@ public:
 	void SetPos(float x, float y);
 	const GRAPH_VECTOR& GetPos() const;
 
-	void Draw(sf::RenderWindow& window, GRAPH_VECTOR cameraPos, float cameraScale, float cameraRotation, GRAPH_NODE_COLOR color=GRAPH_NODE_COLOR::Normal );
+	void Draw(RenderData& renderData, GRAPH_NODE_COLOR color=GRAPH_NODE_COLOR::Normal );
 
 private:
 	GRAPH_NODE_ID m_id;

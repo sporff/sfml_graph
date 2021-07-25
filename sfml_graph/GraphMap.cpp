@@ -46,6 +46,12 @@ GRAPH_EDGE_ID GraphMap::AddEdge(const GraphEdge& edge)
 	return addedEdgeID;
 }
 
+bool GraphMap::AddEdgeEntity(const GraphEdgeEntity& edgeEntity)
+{
+	m_edgeEntities.push_back(edgeEntity);
+	return true;
+}
+
 int GraphMap::AddNodes(std::vector<GraphNode> nodeList)
 {
 	int addCount = 0;
@@ -91,6 +97,10 @@ const GraphNode* GraphMap::GetNode(GRAPH_NODE_ID nodeID)
 
 const GraphEdge* GraphMap::GetEdge(GRAPH_EDGE_ID edgeID)
 {
+	GraphEdgeMap::iterator foundEdge = m_edgeMap.find(edgeID);
+	if (foundEdge != m_edgeMap.end())
+		return &(foundEdge->second);
+
 	return nullptr;
 }
 
@@ -235,6 +245,63 @@ double GraphMap::GetEdgeLength(const GraphEdge& edge)
 	return GetDistanceBetweenNodes(*node1, *node2);
 }
 
+bool GraphMap::AddDistanceToEdgeEntity(GRAPH_ENTITY_ID id, double nDisToAdd)
+{
+	if (id == INVALID_ENTITY_ID)
+		return false;
+
+	for (auto& curEdgeEntity : m_edgeEntities)
+	{
+		if (curEdgeEntity.GetID() == id)
+		{
+			// TODO
+			return true;
+		}
+	}
+
+	return false;
+}
+
+GRAPH_VECTOR GraphMap::EdgeToScreenPos(GRAPH_EDGE_ID edgeID, GRAPH_NODE_ID curNodeID, double nDistanceFromPrev)
+{
+	auto pEdge = GetEdge(edgeID);
+	if (pEdge != nullptr)
+	{
+		auto pStartNode = GetNode(pEdge->GetStartNodeID());
+		auto pEndNode = GetNode(pEdge->GetEndNodeID());
+
+		if (pStartNode != nullptr)
+		{
+			if (pEndNode != nullptr)
+			{
+				// Found start and end nodes
+				GRAPH_VECTOR startPos = pStartNode->GetPos();
+				GRAPH_VECTOR endPos = pEndNode->GetPos();
+				GRAPH_VECTOR edgeVector = {endPos.x - startPos.x, endPos.y - startPos.y};
+				double nEdgeLength = pEdge->GetLength();
+
+				GRAPH_VECTOR entityEdgeVector = {
+					(float)((edgeVector.x / nEdgeLength)*nDistanceFromPrev + startPos.x)
+					, (float)((edgeVector.y / nEdgeLength)*nDistanceFromPrev + startPos.y)
+				};
+				return entityEdgeVector;
+			}
+			else
+			{
+				// No end point somehow?
+			}
+		}
+	}
+	
+	auto pCurNode = GetNode(curNodeID);
+	if (pCurNode != nullptr)
+	{
+		return pCurNode->GetPos();
+	}
+
+	return { 0.f, 0.f };
+}
+
 GRAPH_VECTOR GraphMap::ScreenToWorld(GRAPH_VECTOR screenVector)
 {
 	return screenVector;
@@ -258,7 +325,7 @@ bool GraphMap::RenderNodes(RenderData& renderData)
 		else if (m_selectedNodes.find(curNodePair.first) != m_selectedNodes.end())
 			color = GRAPH_NODE_COLOR::Selected;
 
-		curNode.Draw(renderData.window, GRAPH_VECTOR(0.f, 0.f), 0.f, 0.f, color);
+		curNode.Draw(renderData, color);
 	}
 
 	return true;
@@ -292,6 +359,17 @@ bool GraphMap::RenderLine(RenderData& renderData, GRAPH_VECTOR startPos, GRAPH_V
 		sf::Vertex(endPos)
 	};
 	renderData.window.draw(line, 2, sf::Lines);
+
+	return true;
+}
+
+bool GraphMap::RenderEdgeEntities(RenderData& renderData)
+{
+	for (auto& curEdgeEntity : m_edgeEntities)
+	{
+		curEdgeEntity._setCachedPosition(EdgeToScreenPos(curEdgeEntity.GetCurrentEdgeID(), curEdgeEntity.GetPrevNodeID(), curEdgeEntity.GetDistanceFromPrevNode()));
+		curEdgeEntity.Draw(renderData);
+	}
 
 	return true;
 }
