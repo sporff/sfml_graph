@@ -438,6 +438,16 @@ int main()
 							routeStartID = closestNode->GetID();
 							std::cout << "start\n";
 						}
+
+						if (routeStartID != INVALID_NODE_ID && routeEndID != INVALID_NODE_ID)
+						{
+							GRAPH_ROUTE newRoute = graphMap.FindShortestPath(graphMap.GetNode(routeStartID), graphMap.GetNode(routeEndID));
+							if (!newRoute.empty())
+							{
+								auto pEntity = graphMap.GetEdgeEntity(0);
+								pEntity->SetRoute(newRoute, true);
+							}
+						}
 					}
 					break;
 				case sf::Mouse::Right:
@@ -515,8 +525,8 @@ int main()
 		window.clear();
 		RenderData renderData{ window, {0.f, 0.f}, 1.f, 0.f };
 
-		if (routeStartID != INVALID_NODE_ID && routeEndID != INVALID_NODE_ID)
-			graphMap.FindShortestPath(graphMap.GetNode(routeStartID), graphMap.GetNode(routeEndID));
+		/*if (routeStartID != INVALID_NODE_ID && routeEndID != INVALID_NODE_ID)
+			graphMap.FindShortestPath(graphMap.GetNode(routeStartID), graphMap.GetNode(routeEndID));*/
 
 		if (mouseMode == MouseMode::AddingNew && addingFromNodeID != INVALID_NODE_ID)
 		{
@@ -530,7 +540,7 @@ int main()
 		graphMap.RenderNodes(renderData);
 		graphMap.RenderEdges(renderData);
 		graphMap.RenderEdgeEntities(renderData);
-		graphMap.AddDistanceToEdgeEntity(0, 0.1);
+		graphMap.AddDistanceToEdgeEntity(0, 0.5);
 
 		//std::cout << mousePos.x << ", " << mousePos.y << "\n";
 		//shape.setPosition((int)mousePos.x, (int)mousePos.y);

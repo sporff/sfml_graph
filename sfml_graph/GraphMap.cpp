@@ -321,6 +321,10 @@ GRAPH_VECTOR GraphMap::EdgeToScreenPos(GRAPH_EDGE_ID edgeID, GRAPH_NODE_ID curNo
 		{
 			if (pEndNode != nullptr)
 			{
+				if (pEndNode->GetID() == curNodeID)
+				{
+					std::swap(pStartNode, pEndNode);
+				}
 				// Found start and end nodes
 				GRAPH_VECTOR startPos = pStartNode->GetPos();
 				GRAPH_VECTOR endPos = pEndNode->GetPos();

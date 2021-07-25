@@ -72,7 +72,7 @@ double GraphEdgeEntity::GetDistanceFromPrevNode()
 	return m_nCurRouteDistanceFromPrev;
 }
 
-bool GraphEdgeEntity::SetRoute(const GRAPH_ROUTE& newRoute)
+bool GraphEdgeEntity::SetRoute(const GRAPH_ROUTE& newRoute, bool bForce)
 {
 	GRAPH_NODE_ID prevNodeID = GetPrevNodeID();
 	GRAPH_NODE_ID nextNodeID = GetNextNodeID();
@@ -82,7 +82,17 @@ bool GraphEdgeEntity::SetRoute(const GRAPH_ROUTE& newRoute)
 	// But still force an "empty" route onto it to make it stop
 	if (newRoute.size() <= 1)
 	{
-		m_curRoute = { {prevNodeID, curEdgeID}, {nextNodeID, INVALID_EDGE_ID} };
+		if (bForce)
+		{
+			m_curRoute = newRoute;
+			m_curRouteIndex = 0;
+			m_nCurRouteDistanceFromPrev = 0.0;
+		}
+		else
+		{
+			m_curRoute = { {prevNodeID, curEdgeID}, {nextNodeID, INVALID_EDGE_ID} };
+			m_curRouteIndex = 0;
+		}
 		return true;
 	}
 
@@ -98,7 +108,13 @@ bool GraphEdgeEntity::SetRoute(const GRAPH_ROUTE& newRoute)
 	// If overwriting an existing route, make sure to not move the entity abruptly
 	if (!m_curRoute.empty() && !newRoute.empty())
 	{
-		if (prevNodeID == newRoute.at(0).nodeID
+		if (bForce)
+		{
+			m_curRoute = newRoute;
+			m_curRouteIndex = 0;
+			m_nCurRouteDistanceFromPrev = 0.0;
+		}
+		else if (prevNodeID == newRoute.at(0).nodeID
 			&& (nextNodeID == INVALID_NODE_ID
 				|| fabs(m_nCurRouteDistanceFromPrev-0.0) < 0.0001
 				|| nextNodeID == newRoute.at(1).nodeID)

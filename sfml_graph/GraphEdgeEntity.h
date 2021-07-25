@@ -21,7 +21,7 @@ public:
 	GRAPH_NODE_ID GetNextNodeID();
 	GRAPH_EDGE_ID GetCurrentEdgeID();
 
-	bool SetRoute(const GRAPH_ROUTE& newRoute);
+	bool SetRoute(const GRAPH_ROUTE& newRoute, bool bForce=false);
 
 	double GetDistanceFromPrevNode();
 	bool SetDistanceFromPrev(double nDistanceFromPrev);
