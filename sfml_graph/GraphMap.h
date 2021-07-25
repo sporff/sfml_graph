@@ -27,6 +27,7 @@ public:
 
 	const GraphNode*	GetNode(GRAPH_NODE_ID nodeID);
 	const GraphEdge*	GetEdge(GRAPH_EDGE_ID edgeID);
+	GraphEdgeEntity*	GetEdgeEntity(GRAPH_ENTITY_ID entityID);
 
 	const GraphNode* GetRandomNode();
 	GRAPH_NODE_ID GetRandomNodeID();
@@ -72,6 +73,7 @@ private:
 	GraphEdgeMap m_edgeMap;
 	GRAPH_NODE_ID m_nextNodeID;
 	GRAPH_EDGE_ID m_nextEdgeID;
+	GRAPH_ENTITY_ID m_nextEntityID;
 
 	std::set<GRAPH_NODE_ID> m_hoveredNodes;
 	std::set<GRAPH_NODE_ID> m_selectedNodes;

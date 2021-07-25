@@ -346,8 +346,8 @@ int main()
 	routeEndID = graphMap.GetRandomNodeID();
 
 	GraphEdgeEntity testEdgeEntity;
-	testEdgeEntity.SetRoute({ { 0, 0 }, { 1, 37 }, { 2, INVALID_EDGE_ID } });
-	testEdgeEntity.SetRoute({ { 0, 0 }, { 1, 37 }, { 2, 37 }, {3, INVALID_EDGE_ID} });
+	//testEdgeEntity.SetRoute({ { 0, 0 }, { 1, 37 }, { 2, INVALID_EDGE_ID } });
+	testEdgeEntity.SetRoute({ { 0, 0 }, { 1, 37 }, { 2, 38 }, {3, INVALID_EDGE_ID} });
 	testEdgeEntity.SetDistanceFromPrev(20.f);
 	graphMap.AddEdgeEntity(testEdgeEntity);
 
@@ -530,6 +530,7 @@ int main()
 		graphMap.RenderNodes(renderData);
 		graphMap.RenderEdges(renderData);
 		graphMap.RenderEdgeEntities(renderData);
+		graphMap.AddDistanceToEdgeEntity(0, 0.1);
 
 		//std::cout << mousePos.x << ", " << mousePos.y << "\n";
 		//shape.setPosition((int)mousePos.x, (int)mousePos.y);

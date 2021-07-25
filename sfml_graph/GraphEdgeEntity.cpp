@@ -16,6 +16,16 @@ GraphEdgeEntity::GraphEdgeEntity(GRAPH_ENTITY_ID id)
 	m_id = id;
 }
 
+GraphEdgeEntity::GraphEdgeEntity(GRAPH_ENTITY_ID id, const GraphEdgeEntity& copyFrom)
+{
+	this->m_id = id;
+	this->m_type = copyFrom.m_type;
+	this->m_curRoute = copyFrom.m_curRoute;
+	this->m_curRouteIndex = copyFrom.m_curRouteIndex;
+	this->m_nCurRouteDistanceFromPrev = copyFrom.m_nCurRouteDistanceFromPrev;
+	this->m_cachedPos = copyFrom.m_cachedPos;
+}
+
 GraphEdgeEntity::~GraphEdgeEntity()
 {
 
@@ -23,7 +33,7 @@ GraphEdgeEntity::~GraphEdgeEntity()
 
 GRAPH_ENTITY_ID GraphEdgeEntity::GetID()
 {
-	return m_id
+	return m_id;
 }
 
 GRAPH_NODE_ID GraphEdgeEntity::GetPrevNodeID()
@@ -106,6 +116,22 @@ bool GraphEdgeEntity::SetDistanceFromPrev(double nDistanceFromPrev)
 {
 	m_nCurRouteDistanceFromPrev = nDistanceFromPrev;
 	return true;
+}
+
+bool GraphEdgeEntity::SetRouteIndex(GRAPH_ROUTE_INDEX newIndex)
+{
+	if (newIndex >= 0 && newIndex < m_curRoute.size())
+	{
+		m_curRouteIndex = newIndex;
+		return true;
+	}
+
+	return false;
+}
+
+GRAPH_ROUTE_INDEX GraphEdgeEntity::GetRouteIndex()
+{
+	return m_curRouteIndex;
 }
 
 void GraphEdgeEntity::Draw(RenderData& renderData, GRAPH_NODE_COLOR color /*= GRAPH_NODE_COLOR::Normal*/)
