@@ -19,6 +19,7 @@ public:
 	GRAPH_NODE_ID		AddNode(const GraphNode& node);
 	GRAPH_EDGE_ID		AddEdge(const GraphEdge& node);
 	bool				AddEdgeEntity(const GraphEdgeEntity& edgeEntity);
+	bool				DeleteEdgeEntity(GRAPH_ENTITY_ID entityID);
 
 	int					AddNodes(std::vector<GraphNode> nodeList);
 	int					AddEdges(std::vector<GraphEdge> edgeList);
@@ -28,6 +29,7 @@ public:
 	const GraphNode*	GetNode(GRAPH_NODE_ID nodeID);
 	const GraphEdge*	GetEdge(GRAPH_EDGE_ID edgeID);
 	GraphEdgeEntity*	GetEdgeEntity(GRAPH_ENTITY_ID entityID);
+	std::vector<GRAPH_ENTITY_ID> GetEdgeEntityIDs();
 
 	const GraphNode* GetRandomNode();
 	GRAPH_NODE_ID GetRandomNodeID();

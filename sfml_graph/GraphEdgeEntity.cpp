@@ -67,6 +67,14 @@ GRAPH_EDGE_ID GraphEdgeEntity::GetCurrentEdgeID()
 	return m_curRoute.at(m_curRouteIndex).edgeID;
 }
 
+bool GraphEdgeEntity::HasReachedEndNode()
+{
+	if (!m_curRoute.empty() && m_curRouteIndex == m_curRoute.size() - 1)
+		return true;
+
+	return false;
+}
+
 double GraphEdgeEntity::GetDistanceFromPrevNode()
 {
 	return m_nCurRouteDistanceFromPrev;

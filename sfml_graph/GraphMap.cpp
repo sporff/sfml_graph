@@ -53,6 +53,19 @@ bool GraphMap::AddEdgeEntity(const GraphEdgeEntity& edgeEntity)
 	return true;
 }
 
+bool GraphMap::DeleteEdgeEntity(GRAPH_ENTITY_ID entityID)
+{
+	m_edgeEntities.erase(
+		std::remove_if(m_edgeEntities.begin(), m_edgeEntities.end(),
+			[entityID](GraphEdgeEntity& entity) {
+				return (entity.GetID() == entityID);
+			}),
+		m_edgeEntities.end()
+	);
+
+	return true;
+}
+
 int GraphMap::AddNodes(std::vector<GraphNode> nodeList)
 {
 	int addCount = 0;
@@ -119,6 +132,18 @@ GraphEdgeEntity* GraphMap::GetEdgeEntity(GRAPH_ENTITY_ID entityID)
 	}
 
 	return nullptr;
+}
+
+std::vector<GRAPH_ENTITY_ID> GraphMap::GetEdgeEntityIDs()
+{
+	std::vector<GRAPH_ENTITY_ID> listBuild;
+
+	for (auto& curEntity : m_edgeEntities)
+	{
+		listBuild.push_back(curEntity.GetID());
+	}
+
+	return listBuild;
 }
 
 const GraphNode* GraphMap::GetRandomNode()

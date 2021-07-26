@@ -20,6 +20,7 @@ public:
 	GRAPH_NODE_ID GetPrevNodeID();
 	GRAPH_NODE_ID GetNextNodeID();
 	GRAPH_EDGE_ID GetCurrentEdgeID();
+	bool HasReachedEndNode();
 
 	bool SetRoute(const GRAPH_ROUTE& newRoute, bool bForce=false);
 
