@@ -10,6 +10,9 @@ public:
 	TileMap();
 	~TileMap();
 
+	int GetWidth();
+	int GetHeight();
+
 	bool CreateMap(int w, int h, CELL_HEIGHT cellHeight=LOWEST_CELL_HEIGHT);
 	void DestroyMap();
 
@@ -18,6 +21,12 @@ public:
 
 	bool RenderMap(RenderData& renderData);
 	bool UpdateGoop(float fTimeDelta);
+	void ClearAllGoop();
+
+	double GetCellPhysicalWidth();
+
+	// Temporary
+	std::vector<TileCell>& GetMap();
 private:
 	double m_cellPhysicalWidth = 16.0;
 

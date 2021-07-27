@@ -1,6 +1,7 @@
 // sfml_graph.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 #include <iostream>
+#include <thread>
 #include <SFML/Graphics.hpp>
 #include "GraphNode.h"
 #include "GraphEdge.h"
@@ -12,8 +13,10 @@ int main()
 {
 	GraphMap graphMap;
 	TileMap tileMap;
-	tileMap.CreateMap(100, 100, 50);
+	tileMap.CreateMap(100,100, 50);
 	tileMap.SetRandomCellHeights();
+
+	std::cout << std::thread::hardware_concurrency() << "\n";
 
 	//graphMap.AddNodes(
 	//	{
@@ -329,7 +332,7 @@ int main()
 		}
 	);
 
-	sf::RenderWindow window(sf::VideoMode(2000, 1600), "What");
+	sf::RenderWindow window(sf::VideoMode(1605, 1605), "What");
 	sf::CircleShape shape(100.f);
 	shape.setFillColor(sf::Color::Green);
 
@@ -356,6 +359,25 @@ int main()
 	{
 		sf::Vector2i mousePosInt = sf::Mouse::getPosition(window);
 		GRAPH_VECTOR mousePos((float)mousePosInt.x, (float)mousePosInt.y);
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		{
+			int height = 50;
+			int x = mousePos.x / tileMap.GetCellPhysicalWidth();
+			int y = mousePos.y / tileMap.GetCellPhysicalWidth();
+			int mapWidth = tileMap.GetWidth();
+			int mapHeight = tileMap.GetHeight();
+			if (x >= 0 && y >= 0 && x < mapWidth-1 && y < mapHeight-1)
+			{
+				tileMap.GetMap().at(y * mapWidth +x).SetGoopHeight(height);
+				tileMap.GetMap().at((y + 1) * mapWidth + x).SetGoopHeight(height);
+				tileMap.GetMap().at(y * mapWidth + (x + 1)).SetGoopHeight(height);
+				tileMap.GetMap().at((y + 1) * mapWidth + (x + 1)).SetGoopHeight(height);
+			}
+		}
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
+		{
+			tileMap.ClearAllGoop();
+		}
 
 		sf::Event event;
 		while (window.pollEvent(event))
@@ -386,7 +408,7 @@ int main()
 				const GraphNode* closestNode = std::get<0>(closestNodeInfo);
 				auto nodeDist = std::get<1>(closestNodeInfo);
 
-				switch (event.mouseButton.button)
+				/*switch (event.mouseButton.button)
 				{
 				case sf::Mouse::Left:
 				{
@@ -462,7 +484,7 @@ int main()
 					}
 					break;
 				}
-				break;
+				break;*/
 			}
 			case sf::Event::MouseMoved:
 			{
