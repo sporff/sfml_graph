@@ -12,7 +12,8 @@ int main()
 {
 	GraphMap graphMap;
 	TileMap tileMap;
-	tileMap.CreateMap(10, 10);
+	tileMap.CreateMap(100, 100, 50);
+	tileMap.SetRandomCellHeights();
 
 	//graphMap.AddNodes(
 	//	{
@@ -328,7 +329,7 @@ int main()
 		}
 	);
 
-	sf::RenderWindow window(sf::VideoMode(1000, 800), "What");
+	sf::RenderWindow window(sf::VideoMode(2000, 1600), "What");
 	sf::CircleShape shape(100.f);
 	shape.setFillColor(sf::Color::Green);
 
@@ -537,10 +538,12 @@ int main()
 				mouseMode = MouseMode::None;
 		}
 
-		graphMap.RenderNodes(renderData);
-		graphMap.RenderEdges(renderData);
-		graphMap.RenderEdgeEntities(renderData);
-		graphMap.AddDistanceToEdgeEntity(0, 0.5);
+		tileMap.UpdateGoop(0.01f);
+		tileMap.RenderMap(renderData);
+		//graphMap.RenderNodes(renderData);
+		//graphMap.RenderEdges(renderData);
+		//graphMap.RenderEdgeEntities(renderData);
+		//graphMap.AddDistanceToEdgeEntity(0, 0.5);
 
 		//std::cout << mousePos.x << ", " << mousePos.y << "\n";
 		//shape.setPosition((int)mousePos.x, (int)mousePos.y);
