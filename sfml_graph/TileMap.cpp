@@ -187,6 +187,8 @@ bool TileMap::RenderMap(RenderData& renderData)
 
 bool TileMap::UpdateGoop(float fTimeDelta)
 {
+	// Add threading...
+
 	double flowRate = 0.1;
 	double flowCap = flowRate * 1.0;
 	double minGoopFlowHeight = 0.0000001;
