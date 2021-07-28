@@ -1,6 +1,10 @@
 #pragma once
 
 #include <vector>
+#include <queue>
+#include <thread>
+#include <functional>
+#include <mutex>
 #include "GraphTypes.h"
 #include "TileCell.h"
 
@@ -34,5 +38,16 @@ private:
 	int m_width;
 	int m_height;
 	std::vector<TileCell> m_map;
+
+	std::atomic_bool m_shutdownThreads;
+	std::mutex m_jobQueueMutex;
+	std::mutex m_consoleMutex;
+	size_t m_threadCount;
+	std::vector<std::thread> m_threadPool;
+	std::queue<std::function<void(int64_t, std::mutex&)>> m_threadJobs;
+
+	void _createThreads();
+	void _joinThreads();
+	void _threadMain(int threadIndex);
 };
 

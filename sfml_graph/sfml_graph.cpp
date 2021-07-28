@@ -16,8 +16,6 @@ int main()
 	tileMap.CreateMap(100,100, 50);
 	tileMap.LoadHeightmapFromImage("c:/Media/hmRidge_100.png");
 
-	std::cout << std::thread::hardware_concurrency() << "\n";
-
 	//graphMap.AddNodes(
 	//	{
 	//		/*{100,100}
@@ -362,8 +360,8 @@ int main()
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
 			int height = 30;
-			int x = mousePos.x / tileMap.GetCellPhysicalWidth();
-			int y = mousePos.y / tileMap.GetCellPhysicalWidth();
+			int x = (int)(mousePos.x / tileMap.GetCellPhysicalWidth());
+			int y = (int)(mousePos.y / tileMap.GetCellPhysicalWidth());
 			int mapWidth = tileMap.GetWidth();
 			int mapHeight = tileMap.GetHeight();
 			if (x >= 0 && y >= 0 && x < mapWidth-1 && y < mapHeight-1)

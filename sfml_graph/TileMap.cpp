@@ -3,12 +3,13 @@
 
 TileMap::TileMap()
 {
-
+	_createThreads();
 }
 
 TileMap::~TileMap()
 {
 	DestroyMap();
+	_joinThreads();
 }
 
 int TileMap::GetWidth()
@@ -198,6 +199,8 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 		int x, y;
 		int height = 100;
 
+
+		/*******Temporary********/
 		bool autoFill = false;
 
 		if (autoFill)
@@ -223,6 +226,7 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 			m_map.at(y * m_width + (x + 1)).SetGoopHeight(height);
 			m_map.at((y + 1) * m_width + (x + 1)).SetGoopHeight(height);
 		}
+		/*************************/
 
 		for (TileCell& curCell : m_map)
 		{
@@ -418,4 +422,84 @@ double TileMap::GetCellPhysicalWidth()
 std::vector<TileCell>& TileMap::GetMap()
 {
 	return m_map;
+}
+
+void TileMap::_createThreads()
+{
+	m_shutdownThreads = false;
+
+	m_threadCount = std::thread::hardware_concurrency();
+	for (int i = 0; i < m_threadCount; i++)
+	{
+		m_threadPool.push_back(std::thread(&TileMap::_threadMain, this, i));
+	}
+
+	{
+		std::lock_guard<std::mutex> add_lg(m_jobQueueMutex);
+
+		// Add some test jobs
+		for (int i = 0; i < 50; i++)
+		{
+			m_threadJobs.push([](int64_t jobID, std::mutex& jobQueueMutex)
+				{
+					std::cout << "thread job" << std::endl;
+				}
+			);
+		}
+	}
+}
+
+void TileMap::_joinThreads()
+{
+	m_shutdownThreads = true;
+
+	for (auto& curThread : m_threadPool)
+	{
+		if (curThread.joinable())
+			curThread.join();
+	}
+}
+
+void TileMap::_threadMain(int threadIndex)
+{
+	std::cout << "thread main: " << threadIndex << std::endl;
+
+	std::function<void(int64_t, std::mutex&)> newTask = nullptr;
+
+	bool bDone = false;
+
+	while (!bDone)
+	{
+		{
+			std::lock_guard<std::mutex> add_lg(m_jobQueueMutex);
+
+			if (m_shutdownThreads)
+			{
+				bDone = true;
+				std::cout << "Shutdown requested" << std::endl;
+				break;
+			}
+			if (m_threadJobs.empty())
+			{
+				//bDone = true;
+				//std::cout << "Queue empty" << std::endl;
+				//break;
+			}
+			else
+			{
+				newTask = m_threadJobs.front();
+				m_threadJobs.pop();
+			}
+		}
+
+		if (newTask)
+		{
+			newTask(1, m_jobQueueMutex);
+			newTask = nullptr;
+		}
+		
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+	}
+
+	std::cout << "thread done: " << threadIndex << std::endl;
 }
