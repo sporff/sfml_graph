@@ -35,6 +35,20 @@ bool TileMap::CreateMap(int w, int h, CELL_HEIGHT cellHeight)
 	m_width = w;
 	m_height = h;
 
+	m_tileQuads.clear();
+	for (int y = 0; y < m_height; y++)
+	{
+		for (int x = 0; x < m_width; x++)
+		{
+			m_tileQuads.append(sf::Vertex(sf::Vector2f(x*m_cellPhysicalWidth, y*m_cellPhysicalWidth + m_cellPhysicalWidth), sf::Color::Red));
+			m_tileQuads.append(sf::Vertex(sf::Vector2f(x*m_cellPhysicalWidth, y*m_cellPhysicalWidth), sf::Color::Red));
+			m_tileQuads.append(sf::Vertex(sf::Vector2f(x*m_cellPhysicalWidth + m_cellPhysicalWidth, y*m_cellPhysicalWidth), sf::Color::Red));
+			m_tileQuads.append(sf::Vertex(sf::Vector2f(x*m_cellPhysicalWidth + m_cellPhysicalWidth, y*m_cellPhysicalWidth + m_cellPhysicalWidth), sf::Color::Red));
+		}
+	}
+
+	m_tileQuads.setPrimitiveType(sf::Quads);
+
 	return false;
 }
 
@@ -60,6 +74,7 @@ bool TileMap::SetAllTileHeights(CELL_HEIGHT newHeight)
 }
 
 bool TileMap::SetRandomCellHeights()
+
 {
 	/*for (TileCell& curCell : m_map)
 	{
@@ -118,6 +133,13 @@ bool TileMap::LoadHeightmapFromImage(std::string filename)
 
 bool TileMap::RenderMap(RenderData& renderData)
 {
+	
+
+	//return false;
+
+	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+	//std::cout << "Task ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
+
 	sf::RectangleShape rectangle(sf::Vector2f(0, 0));
 	rectangle.setSize(sf::Vector2f((float)m_cellPhysicalWidth, (float)m_cellPhysicalWidth));
 
@@ -136,6 +158,8 @@ bool TileMap::RenderMap(RenderData& renderData)
 	sf::Color goopClrWarning(255, 0, 255);
 		//rgb(186, 158, 124)
 		//rgb(223, 181, 130)
+
+	int quadPos[4] = { 0,1,2,3 };
 	for (int y = 0; y < m_height; y++)
 	{
 		for (int x = 0; x < m_width; x++)
@@ -171,41 +195,51 @@ bool TileMap::RenderMap(RenderData& renderData)
 
 			sf::Color groundWithGoopClr = lerpClr(groundClr, goopClr, goopRatio);
 				
-
-
 			if (goopRatio > 1.0)
 				sf::Color groundWithGoopClr = lerpClr(groundClr, goopClrWarning, goopRatio);
 
-			rectangle.setFillColor(groundWithGoopClr);
-
+			m_tileQuads[quadPos[0]].color = groundWithGoopClr;
+			m_tileQuads[quadPos[1]].color = groundWithGoopClr;
+			m_tileQuads[quadPos[2]].color = groundWithGoopClr;
+			m_tileQuads[quadPos[3]].color = groundWithGoopClr;
+			quadPos[0] += 4;
+			quadPos[1] += 4;
+			quadPos[2] += 4;
+			quadPos[3] += 4;
+			/*rectangle.setFillColor(groundWithGoopClr);
 			rectangle.setPosition((float)(x * m_cellPhysicalWidth), (float)(y * m_cellPhysicalWidth));
-			renderData.window.draw(rectangle);
+			renderData.window.draw(rectangle);*/
+
 		}
 	}
+
+	renderData.window.draw(m_tileQuads);
+
+	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+	std::cout << "Render time: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
 
 	return true;
 }
 
 bool TileMap::UpdateGoop(float fTimeDelta)
 {
-	// Add threading...
-
 	double flowRate = 0.1;
 	double flowCap = flowRate * 1.0;
 	double minGoopFlowHeight = 0.0000001;
 
+	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
 	for (int iterCount = 0; iterCount < 10; iterCount++)
 	{
-		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-
 		int x, y;
 		int height = 100;
 
 
 		/*******Temporary********/
-		bool autoFill = false;
 
+		std::chrono::steady_clock::time_point subUpdateBegin = std::chrono::steady_clock::now();
+
+		bool autoFill = true;
 		if (autoFill)
 		{
 			x = 69;
@@ -239,7 +273,6 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 		auto lerpNum = [](float n1, float n2, float lerpValue) -> float {
 			return (n2 - n1) * lerpValue + n1;
 		};
-
 
 		int taskCount = m_threadCount;
 		int lineCountPer = (int)std::floor(m_height / taskCount);
@@ -332,7 +365,7 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 					}
 					//std::cout << "Task ended" << std::endl;
 					std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-					//std::cout << "Task ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
+					//std::cout << "Task ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]\n";
 					tasksComplete++;
 				}
 			);
@@ -340,6 +373,8 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 
 		while (tasksComplete < taskCount)
 		{
+			//std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			//m_threadAccessConditionVariable.notify_one();
 		}
 
 		
@@ -413,18 +448,23 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 			}
 		}*/
 
+
+		std::chrono::steady_clock::time_point subUpdateEnd = std::chrono::steady_clock::now();
+		std::cout << "    Ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (subUpdateEnd - subUpdateBegin).count() << "[ms]\n";
+		
+
 		for (TileCell& curCell : m_map)
 		{
 			if (curCell.GetGoopCalcHeight() > 0.0001)
 				curCell.SetGoopHeight(curCell.GetGoopCalcHeight());
 			else
 				curCell.SetGoopHeight(0.0);
-
 		}
 
-		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-		//std::cout << "Update ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
 	}
+
+	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+	std::cout << "Update ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]\n";
 
 	return true;
 }
@@ -452,7 +492,7 @@ void TileMap::_createThreads()
 {
 	m_shutdownThreads = false;
 
-	m_threadCount = 4;//std::thread::hardware_concurrency();
+	m_threadCount = 1;//std::thread::hardware_concurrency();
 	for (int i = 0; i < m_threadCount; i++)
 	{
 		m_threadPool.push_back(std::thread(&TileMap::_threadMain, this, i));
@@ -489,8 +529,11 @@ void TileMap::_threadMain(int threadIndex)
 
 	while (!bDone)
 	{
-		//std::unique_lock<std::mutex> m_taskQueueMutex;
-		//m_threadPoolConditionVariable.wait(m_taskQueueMutex, [] {return ready; });
+		std::chrono::seconds timeoutPeriod(2);
+		auto timePoint = std::chrono::system_clock::now() + timeoutPeriod;
+
+		//std::cout << "thread lock: " << threadIndex << std::endl;
+		//std::cout << "thread unlock: " << threadIndex << std::endl;
 		//std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
 		{
@@ -526,8 +569,15 @@ void TileMap::_threadMain(int threadIndex)
 			//std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 			//std::cout << "Cycle ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]\n";
 		}
+
+		std::unique_lock<std::mutex> taskDataLock(m_threadAccessMutex);
+		if (m_threadAccessConditionVariable.wait_until(taskDataLock, timePoint) == std::cv_status::timeout)
+		{
+			std::cout << "cv timeout: " << threadIndex << std::endl;
+		}
+
 		//else
-		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		//std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
 		//std::cout << "thread cycle: " << threadIndex << std::endl;
 
@@ -538,7 +588,11 @@ void TileMap::_threadMain(int threadIndex)
 
 void TileMap::_addTask(std::function<void(int64_t)> newTask)
 {
-	std::lock_guard<std::mutex> add_lg(m_taskQueueMutex);
+	std::lock_guard<std::mutex> taskDataLock(m_threadAccessMutex);
+	{
+		std::lock_guard<std::mutex> add_lg(m_taskQueueMutex);
 
-	m_threadTasks.push(newTask);
+		m_threadTasks.push(newTask);
+		m_threadAccessConditionVariable.notify_one();
+	}
 }
