@@ -194,8 +194,11 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 	double flowCap = flowRate * 1.0;
 	double minGoopFlowHeight = 0.0000001;
 
+
 	for (int iterCount = 0; iterCount < 10; iterCount++)
 	{
+		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
 		int x, y;
 		int height = 100;
 
@@ -238,57 +241,132 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 		};
 
 
+		int taskCount = m_threadCount;
+		int lineCountPer = (int)std::floor(m_height / taskCount);
+
+		std::atomic_int64_t tasksComplete = 0;
+		for (int t = 0; t < taskCount; t++)
+		{
+			int startLine = t * lineCountPer;
+			int endLine = startLine + lineCountPer;
+			int startCellIndex = startLine * m_width;
+
+			if (t == (taskCount - 1))
+				endLine = m_height;
+
+			_addTask([this, &tasksComplete, startLine, endLine, startCellIndex, minGoopFlowHeight, flowCap](int64_t jobID)
+				{
+					std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+					//std::cout << "Task started" << std::endl;
+
+					double flowRate = 0.0;
+					int curCellIndex = startCellIndex;
+
+					for (int y = startLine; y < endLine; y++)
+					{
+						for (int x = 0; x < m_width; x++)
+						{
+							TileCell* pCurCell = &m_map.at(curCellIndex);
+							if (pCurCell->GetGoopOnlyHeight() <= 2.0)
+							{
+								curCellIndex++;
+								continue;
+							}
+							TileCell* pAdjLeft = nullptr, * pAdjRight = nullptr, * pAdjTop = nullptr, * pAdjBottom = nullptr;
+
+							if (x > 0) {
+								pAdjLeft = &m_map.at(curCellIndex - 1);
+							}
+							if (y > 0) {
+								pAdjTop = &m_map.at(curCellIndex - m_width);
+							}
+							if (x < m_width - 1) {
+								pAdjRight = &m_map.at(curCellIndex + 1);
+							}
+							if (y < m_height - 1) {
+								pAdjBottom = &m_map.at(curCellIndex + m_width);
+							}
+
+							if (pAdjLeft)
+							{
+								GOOP_HEIGHT heightDiff = pCurCell->GetGoopHeight() - pAdjLeft->GetGoopHeight();
+								if (heightDiff > flowCap && pCurCell->GetGoopOnlyHeight() > minGoopFlowHeight)
+								{
+									flowRate = heightDiff * 0.1;
+									pCurCell->IncreaseGoopCalcHeight(-flowRate);
+									pAdjLeft->IncreaseGoopCalcHeight(flowRate);
+								}
+							}
+							if (pAdjRight)
+							{
+								GOOP_HEIGHT heightDiff = pCurCell->GetGoopHeight() - pAdjRight->GetGoopHeight();
+								if (heightDiff > flowCap && pCurCell->GetGoopOnlyHeight() > minGoopFlowHeight)
+								{
+									flowRate = heightDiff * 0.1;
+									pCurCell->IncreaseGoopCalcHeight(-flowRate);
+									pAdjRight->IncreaseGoopCalcHeight(flowRate);
+								}
+							}
+							if (pAdjTop)
+							{
+								GOOP_HEIGHT heightDiff = pCurCell->GetGoopHeight() - pAdjTop->GetGoopHeight();
+								if (heightDiff > flowCap && pCurCell->GetGoopOnlyHeight() > minGoopFlowHeight)
+								{
+									flowRate = heightDiff * 0.1;
+									pCurCell->IncreaseGoopCalcHeight(-flowRate);
+									pAdjTop->IncreaseGoopCalcHeight(flowRate);
+								}
+							}
+							if (pAdjBottom)
+							{
+								GOOP_HEIGHT heightDiff = pCurCell->GetGoopHeight() - pAdjBottom->GetGoopHeight();
+								if (heightDiff > flowCap && pCurCell->GetGoopOnlyHeight() > minGoopFlowHeight)
+								{
+									flowRate = heightDiff * 0.1;
+									pCurCell->IncreaseGoopCalcHeight(-flowRate);
+									pAdjBottom->IncreaseGoopCalcHeight(flowRate);
+								}
+							}
+							curCellIndex++;
+						}
+					}
+					//std::cout << "Task ended" << std::endl;
+					std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+					//std::cout << "Task ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
+					tasksComplete++;
+				}
+			);
+		}
+
+		while (tasksComplete < taskCount)
+		{
+		}
+
 		
-		int curCellIndex = 0;
+		/*int curCellIndex = 0;
 		for (int y = 0; y < m_height; y++)
 		{
 			for (int x = 0; x < m_width; x++)
 			{
-				//curCellIndex = y * m_width + x;
 				TileCell* pCurCell = &m_map.at(curCellIndex);
 				if (pCurCell->GetGoopOnlyHeight() <= 2.0)
 				{
 					curCellIndex++;
 					continue;
 				}
-
-				//bool bLeftLower = false, bRightLower = false, bTopLower = false, bBottomLower = false;
 				TileCell* pAdjLeft = nullptr, * pAdjRight = nullptr, * pAdjTop = nullptr, * pAdjBottom = nullptr;
-
-				//TileCell* pLowest = nullptr;
 
 				if (x > 0) {
 					pAdjLeft = &m_map.at(curCellIndex-1);
-					/*pLowest = pAdjLeft;
-					if (pCurCell->GetGoopHeight() > pAdjLeft->GetGoopHeight())
-						bLeftLower = true;*/
 				}
 				if (y > 0) {
 					pAdjTop = &m_map.at(curCellIndex-m_width);
-					/*if (!pLowest || (pLowest && pLowest->GetGoopHeight() > pAdjTop->GetGoopHeight()))
-					{
-						pLowest = pAdjTop;
-					}
-					if (pCurCell->GetGoopHeight() > pAdjTop->GetGoopHeight())
-						bTopLower = true;*/
 				}
 				if (x < m_width - 1) {
 					pAdjRight = &m_map.at(curCellIndex+1);
-					/*if (!pLowest || (pLowest && pLowest->GetGoopHeight() > pAdjRight->GetGoopHeight()))
-					{
-						pLowest = pAdjRight;
-					}
-					if (pCurCell->GetGoopHeight() > pAdjRight->GetGoopHeight())
-						bRightLower = true;*/
 				}
 				if (y < m_height - 1) {
 					pAdjBottom = &m_map.at(curCellIndex+m_width);
-					/*if (!pLowest || (pLowest && pLowest->GetGoopHeight() > pAdjBottom->GetGoopHeight()))
-					{
-						pLowest = pAdjBottom;
-					}
-					if (pCurCell->GetGoopHeight() > pAdjBottom->GetGoopHeight())
-						bBottomLower = true;*/
 				}
 
 				if (pAdjLeft)
@@ -331,65 +409,9 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 						pAdjBottom->IncreaseGoopCalcHeight(flowRate);
 					}
 				}
-				
-				// Trying out letting it flow off screen and disappearing
-				/*if (!pAdjLeft)
-					pCurCell->IncreaseGoopCalcHeight(-flowRate);
-				if (!pAdjRight)
-					pCurCell->IncreaseGoopCalcHeight(-flowRate);
-				if (!pAdjTop)
-					pCurCell->IncreaseGoopCalcHeight(-flowRate);
-				if (!pAdjBottom)
-					pCurCell->IncreaseGoopCalcHeight(-flowRate);*/
-
-
-				//if (pLowest && pLowest->GetGoopHeight() < pCurCell->GetGoopHeight() + 1)
-				//{
-				//	////pLowest->SetGoopHeight(pLowest->GetGoopHeight() + 1.0);
-				//	////m_map.at(ly * m_width + lx).SetGoopHeight(pLowest->GetGoopHeight() + 1.0);
-				//	//pCurCell->IncreaseGoopCalcHeight(-10.0);
-				//	//pLowest->IncreaseGoopCalcHeight(10.0);
-				//}
-				//else
-				//{
-				//	//pNewCell->SetGoopHeight(pCurCell->GetGoopHeight());
-				//}
-
-
-
-				/*double totalToAvg = pCurCell->GetGoopHeight();
-				int avgCount = 1;*/
-
-				/*if (x > 0) {
-					totalToAvg += m_map.at((y)*m_width + (x - 1)).GetGoopHeight();
-					avgCount += 1;
-				}
-				if (y > 0) {
-					totalToAvg += m_map.at((y - 1) * m_width + (x)).GetGoopHeight();
-					avgCount += 1;
-				}
-				if (x < m_width - 1) {
-					totalToAvg += m_map.at((y)*m_width + (x + 1)).GetGoopHeight();
-					avgCount += 1;
-					pNewCell->SetGoopHeight(m_map.at((y)*m_width + (x + 1)).GetGoopHeight());
-				}
-				else
-				{
-					pNewCell->SetGoopHeight(0);
-				}
-				if (y < m_height - 1) {
-					totalToAvg += m_map.at((y + 1) * m_width + (x)).GetGoopHeight();
-					avgCount += 1;
-				}*/
-
-				//pNewCell->SetGoopHeight( lerpNum(pCurCell->GetGoopHeight(), totalToAvg / avgCount, 1.0));
-				//pNewCell->SetGoopHeight()
-				//pCurCell->SetGoopHeight(pCurCell->GetGoopHeight() - 1.0);
 				curCellIndex++;
 			}
-		}
-
-		//m_map = m_newMap;
+		}*/
 
 		for (TileCell& curCell : m_map)
 		{
@@ -400,6 +422,8 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 
 		}
 
+		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+		//std::cout << "Update ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
 	}
 
 	return true;
@@ -428,25 +452,21 @@ void TileMap::_createThreads()
 {
 	m_shutdownThreads = false;
 
-	m_threadCount = std::thread::hardware_concurrency();
+	m_threadCount = 4;//std::thread::hardware_concurrency();
 	for (int i = 0; i < m_threadCount; i++)
 	{
 		m_threadPool.push_back(std::thread(&TileMap::_threadMain, this, i));
 	}
 
+	// Add some test jobs
+	/*for (int i = 0; i < 50; i++)
 	{
-		std::lock_guard<std::mutex> add_lg(m_jobQueueMutex);
-
-		// Add some test jobs
-		for (int i = 0; i < 50; i++)
-		{
-			m_threadJobs.push([](int64_t jobID, std::mutex& jobQueueMutex)
-				{
-					std::cout << "thread job" << std::endl;
-				}
-			);
-		}
-	}
+		_addTask([this](int64_t jobID, std::mutex& jobQueueMutex)
+			{
+				std::cout << "thread job" << std::endl;
+			}
+		);
+	}*/
 }
 
 void TileMap::_joinThreads()
@@ -462,16 +482,19 @@ void TileMap::_joinThreads()
 
 void TileMap::_threadMain(int threadIndex)
 {
-	std::cout << "thread main: " << threadIndex << std::endl;
+	//std::cout << "thread main: " << threadIndex << std::endl;
 
-	std::function<void(int64_t, std::mutex&)> newTask = nullptr;
-
+	std::function<void(int64_t)> newTask = nullptr;
 	bool bDone = false;
 
 	while (!bDone)
 	{
+		//std::unique_lock<std::mutex> m_taskQueueMutex;
+		//m_threadPoolConditionVariable.wait(m_taskQueueMutex, [] {return ready; });
+		//std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
 		{
-			std::lock_guard<std::mutex> add_lg(m_jobQueueMutex);
+			std::lock_guard<std::mutex> add_lg(m_taskQueueMutex);
 
 			if (m_shutdownThreads)
 			{
@@ -479,27 +502,43 @@ void TileMap::_threadMain(int threadIndex)
 				std::cout << "Shutdown requested" << std::endl;
 				break;
 			}
-			if (m_threadJobs.empty())
+			
+			if (!m_threadTasks.empty())
 			{
+				//std::cout << "Found task" << std::endl;
+				newTask = m_threadTasks.front();
+				m_threadTasks.pop();
+			}
+			//else
+			//{
 				//bDone = true;
 				//std::cout << "Queue empty" << std::endl;
 				//break;
-			}
-			else
-			{
-				newTask = m_threadJobs.front();
-				m_threadJobs.pop();
-			}
+			//}
 		}
 
 		if (newTask)
 		{
-			newTask(1, m_jobQueueMutex);
+			//std::cout << "Performing task" << std::endl;
+			newTask(1);
 			newTask = nullptr;
+
+			//std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+			//std::cout << "Cycle ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]\n";
 		}
-		
+		//else
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+		//std::cout << "thread cycle: " << threadIndex << std::endl;
+
 	}
 
 	std::cout << "thread done: " << threadIndex << std::endl;
+}
+
+void TileMap::_addTask(std::function<void(int64_t)> newTask)
+{
+	std::lock_guard<std::mutex> add_lg(m_taskQueueMutex);
+
+	m_threadTasks.push(newTask);
 }

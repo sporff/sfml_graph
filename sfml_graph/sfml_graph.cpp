@@ -14,7 +14,7 @@ int main()
 	GraphMap graphMap;
 	TileMap tileMap;
 	tileMap.CreateMap(100,100, 50);
-	tileMap.LoadHeightmapFromImage("c:/Media/hmRidge_100.png");
+	tileMap.LoadHeightmapFromImage("c:/Media/hm1_200.png");
 
 	//graphMap.AddNodes(
 	//	{

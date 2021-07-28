@@ -39,15 +39,17 @@ private:
 	int m_height;
 	std::vector<TileCell> m_map;
 
+	std::condition_variable m_threadPoolConditionVariable;
 	std::atomic_bool m_shutdownThreads;
-	std::mutex m_jobQueueMutex;
+	std::mutex m_taskQueueMutex;
 	std::mutex m_consoleMutex;
 	size_t m_threadCount;
 	std::vector<std::thread> m_threadPool;
-	std::queue<std::function<void(int64_t, std::mutex&)>> m_threadJobs;
+	std::queue<std::function<void(int64_t)>> m_threadTasks;
 
 	void _createThreads();
 	void _joinThreads();
 	void _threadMain(int threadIndex);
+	void _addTask(std::function<void(int64_t)> newTask);
 };
 
