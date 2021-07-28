@@ -18,6 +18,7 @@ public:
 
 	bool SetAllTileHeights(CELL_HEIGHT newHeight);
 	bool SetRandomCellHeights();
+	bool LoadHeightmapFromImage(std::string filename);
 
 	bool RenderMap(RenderData& renderData);
 	bool UpdateGoop(float fTimeDelta);

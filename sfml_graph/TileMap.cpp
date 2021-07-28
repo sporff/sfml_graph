@@ -66,36 +66,41 @@ bool TileMap::SetRandomCellHeights()
 	}*/
 
 
-	//for (int y = 0; y < m_height; y++)
-	//{
-	//	for (int x = 0; x < m_width; x++)
-	//	{
-	//		TileCell& curCell = m_map.at(y * m_width + x);
-	//		//curCell.SetHeight((sin(x/5.f)+1.f)*20.f + (sin(y/5.f)+1.f)*20.f);
-	//		//curCell.SetGoopHeight(100);
-	//		if ((x / 10) % 2 == 0)
-	//			curCell.SetHeight(0);
-	//		else
-	//			curCell.SetHeight(50);
+	for (int y = 0; y < m_height; y++)
+	{
+		for (int x = 0; x < m_width; x++)
+		{
+			TileCell& curCell = m_map.at(y * m_width + x);
+			//curCell.SetHeight((sin(x/5.f)+1.f)*20.f + (sin(y/5.f)+1.f)*20.f);
+			//curCell.SetGoopHeight(100);
+			if ((x / 10) % 2 == 0)
+				curCell.SetHeight(0);
+			else
+				curCell.SetHeight(50);
 
-	//		//if (y > 25 && x > 25 && y < 75 && x < 75)
-	//			//curCell.SetGoopHeight(100);
-	//		//curCell.SetGoopHeight((rand() % (int)GOOP_HEIGHT_RANGE));
-	//		//curCell.SetGoopHeight(x*5);
-	//	}
-	//}
+			//if (y > 25 && x > 25 && y < 75 && x < 75)
+				//curCell.SetGoopHeight(100);
+			//curCell.SetGoopHeight((rand() % (int)GOOP_HEIGHT_RANGE));
+			//curCell.SetGoopHeight(x*5);
+		}
+	}
 
+	return true;
+}
+
+bool TileMap::LoadHeightmapFromImage(std::string filename)
+{
 	sf::Image heightMap;
-	if (!heightMap.loadFromFile("c:/Media/hmRidge_200.png"))
+	if (!heightMap.loadFromFile(filename))
 		return false;
-	int width=heightMap.getSize().x, height=heightMap.getSize().y;
+	int width = heightMap.getSize().x, height = heightMap.getSize().y;
 
 	if (height > width)
 		m_cellPhysicalWidth = 1600.0 / (double)height;
 	else
 		m_cellPhysicalWidth = 1600.0 / (double)width;
 
-	CreateMap(width,height);
+	CreateMap(width, height);
 
 	for (int y = 0; y < m_height; y++)
 	{
@@ -106,7 +111,6 @@ bool TileMap::SetRandomCellHeights()
 			curCell.SetHeight((uint8_t)((double)r / 255.0 * 100.0));
 		}
 	}
-
 
 	return true;
 }
@@ -150,8 +154,8 @@ bool TileMap::RenderMap(RenderData& renderData)
 			{
 				if (goopRatio < 0.1)
 					goopRatio = 0.1;
-				else if (goopRatio < 0.2)
-					goopRatio = 0.2;
+				/*else if (goopRatio < 0.2)
+					goopRatio = 0.2;*/
 				else if (goopRatio < 0.3)
 					goopRatio = 0.3;
 				/*else if (goopRatio < 0.4)
@@ -236,7 +240,7 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 			{
 				//curCellIndex = y * m_width + x;
 				TileCell* pCurCell = &m_map.at(curCellIndex);
-				if (pCurCell->GetGoopOnlyHeight() <= 1.0)
+				if (pCurCell->GetGoopOnlyHeight() <= 2.0)
 				{
 					curCellIndex++;
 					continue;

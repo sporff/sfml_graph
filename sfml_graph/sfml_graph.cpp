@@ -14,7 +14,7 @@ int main()
 	GraphMap graphMap;
 	TileMap tileMap;
 	tileMap.CreateMap(100,100, 50);
-	tileMap.SetRandomCellHeights();
+	tileMap.LoadHeightmapFromImage("c:/Media/hmRidge_100.png");
 
 	std::cout << std::thread::hardware_concurrency() << "\n";
 
@@ -361,7 +361,7 @@ int main()
 		GRAPH_VECTOR mousePos((float)mousePosInt.x, (float)mousePosInt.y);
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
-			int height = 50;
+			int height = 30;
 			int x = mousePos.x / tileMap.GetCellPhysicalWidth();
 			int y = mousePos.y / tileMap.GetCellPhysicalWidth();
 			int mapWidth = tileMap.GetWidth();
