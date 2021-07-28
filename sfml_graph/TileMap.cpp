@@ -106,15 +106,22 @@ bool TileMap::SetRandomCellHeights()
 
 bool TileMap::LoadHeightmapFromImage(std::string filename)
 {
+	std::cout << "Loading heightmap: " << filename << "\n";
+
 	sf::Image heightMap;
 	if (!heightMap.loadFromFile(filename))
+	{
+		std::cout << "  File not found!" << "\n";
 		return false;
+	}
 	int width = heightMap.getSize().x, height = heightMap.getSize().y;
 
 	if (height > width)
 		m_cellPhysicalWidth = 1600.0 / (double)height;
 	else
 		m_cellPhysicalWidth = 1600.0 / (double)width;
+
+	std::cout << "  Size: " << width << ", " << height << "\n";
 
 	CreateMap(width, height);
 
@@ -133,9 +140,7 @@ bool TileMap::LoadHeightmapFromImage(std::string filename)
 
 bool TileMap::RenderMap(RenderData& renderData)
 {
-	
-
-	//return false;
+	// TODO the color updating should be event based and not updating every tile every frame
 
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 	//std::cout << "Task ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
@@ -151,8 +156,12 @@ bool TileMap::RenderMap(RenderData& renderData)
 		);
 	};
 
-	sf::Color lowestClr(67, 53, 35);
-	sf::Color highestClr(223, 181, 130);
+	//sf::Color lowestClr(67, 53, 35);
+	//sf::Color highestClr(223, 181, 130);
+	sf::Color lowestClr(0, 0, 0);
+	sf::Color highestClr(255, 255, 255);
+
+
 	//sf::Color goopClr(70, 90, 230);
 	sf::Color goopClr(0, 0, 255);
 	sf::Color goopClrWarning(255, 0, 255);
@@ -216,7 +225,7 @@ bool TileMap::RenderMap(RenderData& renderData)
 	renderData.window.draw(m_tileQuads);
 
 	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-	std::cout << "Render time: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
+	std::cout << "Tilemap render time: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
 
 	return true;
 }
@@ -232,37 +241,46 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 	for (int iterCount = 0; iterCount < 10; iterCount++)
 	{
 		int x, y;
-		int height = 100;
+		int height = 20;
 
 
 		/*******Temporary********/
 
 		std::chrono::steady_clock::time_point subUpdateBegin = std::chrono::steady_clock::now();
 
-		bool autoFill = true;
+		for (auto& curEmitter : m_emittingPoints)
+		{
+			x = curEmitter.x;
+			y = curEmitter.y;
+			m_map.at(y * m_width + x).SetGoopHeight(m_emittingHeight);
+			m_map.at((y + 1) * m_width + x).SetGoopHeight(m_emittingHeight);
+			m_map.at(y * m_width + (x + 1)).SetGoopHeight(m_emittingHeight);
+			m_map.at((y + 1) * m_width + (x + 1)).SetGoopHeight(m_emittingHeight);
+		}
+		/*bool autoFill = true;
 		if (autoFill)
 		{
-			x = 69;
-			y = 95;
+			x = 152;
+			y = 5;
 			m_map.at(y * m_width + x).SetGoopHeight(height);
 			m_map.at((y + 1) * m_width + x).SetGoopHeight(height);
 			m_map.at(y * m_width + (x + 1)).SetGoopHeight(height);
 			m_map.at((y + 1) * m_width + (x + 1)).SetGoopHeight(height);
 
-			x = 85;
-			y = 55;
+			x = 161;
+			y = 82;
 			m_map.at(y * m_width + x).SetGoopHeight(height);
 			m_map.at((y + 1) * m_width + x).SetGoopHeight(height);
 			m_map.at(y * m_width + (x + 1)).SetGoopHeight(height);
 			m_map.at((y + 1) * m_width + (x + 1)).SetGoopHeight(height);
 
-			x = 17;
-			y = 95;
+			x = 120;
+			y = 106;
 			m_map.at(y * m_width + x).SetGoopHeight(height);
 			m_map.at((y + 1) * m_width + x).SetGoopHeight(height);
 			m_map.at(y * m_width + (x + 1)).SetGoopHeight(height);
 			m_map.at((y + 1) * m_width + (x + 1)).SetGoopHeight(height);
-		}
+		}*/
 		/*************************/
 
 		for (TileCell& curCell : m_map)
@@ -289,6 +307,7 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 
 			_addTask([this, &tasksComplete, startLine, endLine, startCellIndex, minGoopFlowHeight, flowCap](int64_t jobID)
 				{
+					double flowCoef = 0.25;
 					std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 					//std::cout << "Task started" << std::endl;
 
@@ -325,7 +344,7 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 								GOOP_HEIGHT heightDiff = pCurCell->GetGoopHeight() - pAdjLeft->GetGoopHeight();
 								if (heightDiff > flowCap && pCurCell->GetGoopOnlyHeight() > minGoopFlowHeight)
 								{
-									flowRate = heightDiff * 0.1;
+									flowRate = heightDiff * flowCoef;
 									pCurCell->IncreaseGoopCalcHeight(-flowRate);
 									pAdjLeft->IncreaseGoopCalcHeight(flowRate);
 								}
@@ -335,7 +354,7 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 								GOOP_HEIGHT heightDiff = pCurCell->GetGoopHeight() - pAdjRight->GetGoopHeight();
 								if (heightDiff > flowCap && pCurCell->GetGoopOnlyHeight() > minGoopFlowHeight)
 								{
-									flowRate = heightDiff * 0.1;
+									flowRate = heightDiff * flowCoef;
 									pCurCell->IncreaseGoopCalcHeight(-flowRate);
 									pAdjRight->IncreaseGoopCalcHeight(flowRate);
 								}
@@ -345,7 +364,7 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 								GOOP_HEIGHT heightDiff = pCurCell->GetGoopHeight() - pAdjTop->GetGoopHeight();
 								if (heightDiff > flowCap && pCurCell->GetGoopOnlyHeight() > minGoopFlowHeight)
 								{
-									flowRate = heightDiff * 0.1;
+									flowRate = heightDiff * flowCoef;
 									pCurCell->IncreaseGoopCalcHeight(-flowRate);
 									pAdjTop->IncreaseGoopCalcHeight(flowRate);
 								}
@@ -355,7 +374,7 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 								GOOP_HEIGHT heightDiff = pCurCell->GetGoopHeight() - pAdjBottom->GetGoopHeight();
 								if (heightDiff > flowCap && pCurCell->GetGoopOnlyHeight() > minGoopFlowHeight)
 								{
-									flowRate = heightDiff * 0.1;
+									flowRate = heightDiff * flowCoef;
 									pCurCell->IncreaseGoopCalcHeight(-flowRate);
 									pAdjBottom->IncreaseGoopCalcHeight(flowRate);
 								}
@@ -450,7 +469,7 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 
 
 		std::chrono::steady_clock::time_point subUpdateEnd = std::chrono::steady_clock::now();
-		std::cout << "    Ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (subUpdateEnd - subUpdateBegin).count() << "[ms]\n";
+		//std::cout << "    Ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (subUpdateEnd - subUpdateBegin).count() << "[ms]\n";
 		
 
 		for (TileCell& curCell : m_map)
@@ -464,7 +483,7 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 	}
 
 	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-	std::cout << "Update ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]\n";
+	//std::cout << "Update ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]\n";
 
 	return true;
 }
@@ -475,6 +494,20 @@ void TileMap::ClearAllGoop()
 	{
 		curCell.SetGoopHeight(0.0);
 		curCell.ResetGoopCalcHeight();
+	}
+}
+
+void TileMap::SetGlobalGoopSeaLevel(double seaLevel)
+{
+	ClearAllGoop();
+
+	for (TileCell& curCell : m_map)
+	{
+		double goopLevel = seaLevel - curCell.GetHeight();
+		if (goopLevel > 0.0001)
+		{
+			curCell.SetGoopHeight(goopLevel);
+		}
 	}
 }
 

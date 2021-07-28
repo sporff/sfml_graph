@@ -13,8 +13,9 @@ int main()
 {
 	GraphMap graphMap;
 	TileMap tileMap;
-	tileMap.CreateMap(100,100, 50);
-	tileMap.LoadHeightmapFromImage("c:/Media/hm1_200.png");
+	tileMap.CreateMap(100,100, 10);
+	tileMap.LoadHeightmapFromImage("c:/Media/hmRidge_200.png");
+	tileMap.SetGlobalGoopSeaLevel(5.0);
 
 	//graphMap.AddNodes(
 	//	{
@@ -355,6 +356,8 @@ int main()
 
 	while (window.isOpen())
 	{
+		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
 		sf::Vector2i mousePosInt = sf::Mouse::getPosition(window);
 		GRAPH_VECTOR mousePos((float)mousePosInt.x, (float)mousePosInt.y);
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
@@ -375,6 +378,32 @@ int main()
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
 		{
 			tileMap.ClearAllGoop();
+			tileMap.m_emittingPoints.clear();
+		}
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Middle))
+		{
+			int height = 30;
+			int x = (int)(mousePos.x / tileMap.GetCellPhysicalWidth());
+			int y = (int)(mousePos.y / tileMap.GetCellPhysicalWidth());
+			int mapWidth = tileMap.GetWidth();
+			int mapHeight = tileMap.GetHeight();
+
+			if (x >= 0 && y >= 0 && x < mapWidth - 1 && y < mapHeight - 1)
+			{
+				int bExists = false;
+				for (auto& curPoint : tileMap.m_emittingPoints)
+				{
+					if (curPoint.x == mousePosInt.x && curPoint.y == mousePosInt.y)
+					{
+						bExists = true;
+						break;
+					}
+				}
+				if (!bExists)
+				{
+					tileMap.m_emittingPoints.push_back(sf::Vector2i(x,y));
+				}
+			}
 		}
 
 		sf::Event event;
@@ -570,6 +599,9 @@ int main()
 		//window.draw(shape);
 
 		window.display();
+
+		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+		std::cout << "Frame time: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
 	}
 
 	return 0;

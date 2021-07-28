@@ -27,6 +27,7 @@ public:
 	bool RenderMap(RenderData& renderData);
 	bool UpdateGoop(float fTimeDelta);
 	void ClearAllGoop();
+	void SetGlobalGoopSeaLevel(double seaLevel);
 
 	double GetCellPhysicalWidth();
 
@@ -52,5 +53,10 @@ private:
 	void _joinThreads();
 	void _threadMain(int threadIndex);
 	void _addTask(std::function<void(int64_t)> newTask);
+
+public:
+	// Temporary
+	int m_emittingHeight = 20;
+	std::vector<sf::Vector2i> m_emittingPoints;
 };
 
