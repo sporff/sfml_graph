@@ -9,12 +9,16 @@
 #include "GraphMap.h"
 #include "GraphEdgeEntity.h"
 #include "TileMap.h"
+#include "InputManager.h"
 
 int main()
 {
 	sf::RenderWindow window(sf::VideoMode(1605, 1605), "What");
 
+	InputManager inputManager;
 	GameInstance gameInstance;
+
+	inputManager.SetGameInstance(&gameInstance);
 	gameInstance.Init(window, "c:/Media/hmRidge_200.png");
 
 	GraphMap graphMap;
@@ -414,7 +418,8 @@ int main()
 			{
 			case sf::Event::MouseButtonPressed:
 			{
-				switch (event.mouseButton.button)
+				inputManager.Event_MouseButtonPressed(event.mouseButton.button);
+				/*switch (event.mouseButton.button)
 				{
 				case sf::Mouse::Left:
 				{
@@ -427,10 +432,12 @@ int main()
 					std::cout << "Right down\n";
 					break;
 				}
-				break;
+				break;*/
 			}
 			case sf::Event::MouseButtonReleased:
 			{
+				inputManager.Event_MouseButtonReleased(event.mouseButton.button);
+
 				graphMap.ClearHighlightedNodes();
 				std::tuple<const GraphNode*, double> closestNodeInfo = graphMap.FindClosestNode(mousePos);
 				const GraphNode* closestNode = std::get<0>(closestNodeInfo);
@@ -516,6 +523,8 @@ int main()
 			}
 			case sf::Event::MouseMoved:
 			{
+				inputManager.Event_MouseMoved(sf::Vector2i(event.mouseMove.x, event.mouseMove.y));
+
 				graphMap.ClearHighlightedNodes();
 				std::tuple<const GraphNode*, double> closestNodeInfo = graphMap.FindClosestNode(mousePos);
 				auto closestNode = std::get<0>(closestNodeInfo);
@@ -605,7 +614,7 @@ int main()
 		window.display();
 
 		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-		std::cout << "Frame time: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
+		//std::cout << "Frame time: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
 	}
 
 	return 0;

@@ -3,7 +3,10 @@
 #include "TileMap.h"
 #include "GraphMap.h"
 
-using GAME_VECTOR = sf::Vector2f;
+class InputManager;
+
+using GameVector2i = sf::Vector2i;
+using GameVector2f = sf::Vector2f;
 
 class GameInstance
 {
@@ -11,15 +14,22 @@ public:
 	GameInstance();
 	~GameInstance();
 
+	void SetInputManager(InputManager* pInputMgr);
+
 	void Init(sf::RenderWindow& window, std::string tilemapHeightMapFilename);
+	void Shutdown();
 
 	void Tick(RenderData& renderData);
 
-private:
-	TileMap m_tileMap;
-	GraphMap m_graphMap;
+	void OnMouseMoved(GameVector2i mousePosition);
 
-	GAME_VECTOR m_viewSize;
+private:
+	InputManager* m_pInputMgr;
+	TileMap* m_pTileMap;
+	GraphMap* m_pGraphMap;
+
+	GameVector2f m_viewSize;
+	GameVector2i m_mousePos;
 
 	void _initTileMap(std::string filename);
 	void _initGraphMap();
