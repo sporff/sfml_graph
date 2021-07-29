@@ -58,5 +58,7 @@ public:
 	// Temporary
 	int m_emittingHeight = 20;
 	std::vector<sf::Vector2i> m_emittingPoints;
+
+	bool RenderDepth(RenderData& renderData, int x, int y);
 };
 

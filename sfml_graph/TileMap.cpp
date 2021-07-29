@@ -40,10 +40,10 @@ bool TileMap::CreateMap(int w, int h, CELL_HEIGHT cellHeight)
 	{
 		for (int x = 0; x < m_width; x++)
 		{
-			m_tileQuads.append(sf::Vertex(sf::Vector2f(x*m_cellPhysicalWidth, y*m_cellPhysicalWidth + m_cellPhysicalWidth), sf::Color::Red));
-			m_tileQuads.append(sf::Vertex(sf::Vector2f(x*m_cellPhysicalWidth, y*m_cellPhysicalWidth), sf::Color::Red));
-			m_tileQuads.append(sf::Vertex(sf::Vector2f(x*m_cellPhysicalWidth + m_cellPhysicalWidth, y*m_cellPhysicalWidth), sf::Color::Red));
-			m_tileQuads.append(sf::Vertex(sf::Vector2f(x*m_cellPhysicalWidth + m_cellPhysicalWidth, y*m_cellPhysicalWidth + m_cellPhysicalWidth), sf::Color::Red));
+			m_tileQuads.append(sf::Vertex(sf::Vector2f((float)(x*m_cellPhysicalWidth)						, (float)(y*m_cellPhysicalWidth + m_cellPhysicalWidth))	, sf::Color::Red));
+			m_tileQuads.append(sf::Vertex(sf::Vector2f((float)(x*m_cellPhysicalWidth)						, (float)(y*m_cellPhysicalWidth))						, sf::Color::Red));
+			m_tileQuads.append(sf::Vertex(sf::Vector2f((float)(x*m_cellPhysicalWidth + m_cellPhysicalWidth)	, (float)(y*m_cellPhysicalWidth))						, sf::Color::Red));
+			m_tileQuads.append(sf::Vertex(sf::Vector2f((float)(x*m_cellPhysicalWidth + m_cellPhysicalWidth)	, (float)(y*m_cellPhysicalWidth + m_cellPhysicalWidth))	, sf::Color::Red));
 		}
 	}
 
@@ -525,7 +525,7 @@ void TileMap::_createThreads()
 {
 	m_shutdownThreads = false;
 
-	m_threadCount = 1;//std::thread::hardware_concurrency();
+	m_threadCount = 7;//std::thread::hardware_concurrency();
 	for (int i = 0; i < m_threadCount; i++)
 	{
 		m_threadPool.push_back(std::thread(&TileMap::_threadMain, this, i));
@@ -628,4 +628,57 @@ void TileMap::_addTask(std::function<void(int64_t)> newTask)
 		m_threadTasks.push(newTask);
 		m_threadAccessConditionVariable.notify_one();
 	}
+}
+
+bool TileMap::RenderDepth(RenderData& renderData, int x, int y)
+{
+	if (x < 0 || x >= m_width || y < 0 || y >= m_height)
+		return false;
+
+	TileCell& curCell = m_map.at(y * m_width + x);
+
+	auto viewSize = renderData.window.getView().getSize();
+
+	sf::Vector2f panePos((float)(viewSize.x * 0.9), (float)(viewSize.y * 0.9));
+	sf::Vector2f paneSize((float)(viewSize.x * 0.1), (float)(viewSize.y * 0.1));
+
+	sf::RectangleShape rectangle;
+	rectangle.setSize(paneSize);
+	rectangle.setPosition(panePos);
+	rectangle.setFillColor(sf::Color::Black);
+	renderData.window.draw(rectangle);
+
+	auto groundHeight = curCell.GetHeight();
+	auto goopHeight = curCell.GetGoopOnlyHeight();
+
+	sf::Vector2f groundRectSize((float)(paneSize.x * 0.1), (float)(paneSize.y * ((float) groundHeight / (float)CELL_HEIGHT_RANGE)));
+	rectangle.setSize(groundRectSize);
+	rectangle.setPosition(sf::Vector2f((float)(panePos.x + (paneSize.x*0.1)), (float)(panePos.y + paneSize.y - groundRectSize.y) ));
+	rectangle.setFillColor(sf::Color(128, 128, 128));
+	renderData.window.draw(rectangle);
+
+	sf::Vector2f goopRectSize((float)(paneSize.x * 0.1), (float)(paneSize.y * ((float)goopHeight / (float)GOOP_HEIGHT_RANGE)));
+	rectangle.setSize(goopRectSize);
+	rectangle.setPosition(sf::Vector2f((float)(panePos.x + (paneSize.x * 0.3)), (float)(panePos.y + paneSize.y - goopRectSize.y)));
+	rectangle.setFillColor(sf::Color(0, 0, 200));
+	renderData.window.draw(rectangle);
+
+
+
+
+	groundRectSize = sf::Vector2f((float)(paneSize.x * 0.1), (float)(paneSize.y * ((float)groundHeight / (float)(CELL_HEIGHT_RANGE+ GOOP_HEIGHT_RANGE))));
+	rectangle.setSize(groundRectSize);
+	rectangle.setPosition(sf::Vector2f((float)(panePos.x + (paneSize.x * 0.7)), (float)(panePos.y + paneSize.y - groundRectSize.y)));
+	rectangle.setFillColor(sf::Color(128, 128, 128));
+	renderData.window.draw(rectangle);
+
+	goopRectSize = sf::Vector2f((float)(paneSize.x * 0.1), (float)(paneSize.y * ((float)goopHeight / (float)(CELL_HEIGHT_RANGE + GOOP_HEIGHT_RANGE))));
+	rectangle.setSize(goopRectSize);
+	rectangle.setPosition(sf::Vector2f((float)(panePos.x + (paneSize.x * 0.7)), (float)(panePos.y + paneSize.y - goopRectSize.y - groundRectSize.y)));
+	rectangle.setFillColor(sf::Color(0, 0, 200));
+	renderData.window.draw(rectangle);
+
+
+
+	return true;
 }
