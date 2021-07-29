@@ -3,12 +3,13 @@
 
 TileMap::TileMap()
 {
-
+	_createThreads();
 }
 
 TileMap::~TileMap()
 {
 	DestroyMap();
+	_joinThreads();
 }
 
 int TileMap::GetWidth()
@@ -33,6 +34,20 @@ bool TileMap::CreateMap(int w, int h, CELL_HEIGHT cellHeight)
 	m_map = std::vector<TileCell>(w * h, cellHeight);
 	m_width = w;
 	m_height = h;
+
+	m_tileQuads.clear();
+	for (int y = 0; y < m_height; y++)
+	{
+		for (int x = 0; x < m_width; x++)
+		{
+			m_tileQuads.append(sf::Vertex(sf::Vector2f((float)(x*m_cellPhysicalWidth)						, (float)(y*m_cellPhysicalWidth + m_cellPhysicalWidth))	, sf::Color::Red));
+			m_tileQuads.append(sf::Vertex(sf::Vector2f((float)(x*m_cellPhysicalWidth)						, (float)(y*m_cellPhysicalWidth))						, sf::Color::Red));
+			m_tileQuads.append(sf::Vertex(sf::Vector2f((float)(x*m_cellPhysicalWidth + m_cellPhysicalWidth)	, (float)(y*m_cellPhysicalWidth))						, sf::Color::Red));
+			m_tileQuads.append(sf::Vertex(sf::Vector2f((float)(x*m_cellPhysicalWidth + m_cellPhysicalWidth)	, (float)(y*m_cellPhysicalWidth + m_cellPhysicalWidth))	, sf::Color::Red));
+		}
+	}
+
+	m_tileQuads.setPrimitiveType(sf::Quads);
 
 	return false;
 }
@@ -59,6 +74,7 @@ bool TileMap::SetAllTileHeights(CELL_HEIGHT newHeight)
 }
 
 bool TileMap::SetRandomCellHeights()
+
 {
 	/*for (TileCell& curCell : m_map)
 	{
@@ -90,15 +106,22 @@ bool TileMap::SetRandomCellHeights()
 
 bool TileMap::LoadHeightmapFromImage(std::string filename)
 {
+	std::cout << "Loading heightmap: " << filename << "\n";
+
 	sf::Image heightMap;
 	if (!heightMap.loadFromFile(filename))
+	{
+		std::cout << "  File not found!" << "\n";
 		return false;
+	}
 	int width = heightMap.getSize().x, height = heightMap.getSize().y;
 
 	if (height > width)
 		m_cellPhysicalWidth = 1600.0 / (double)height;
 	else
 		m_cellPhysicalWidth = 1600.0 / (double)width;
+
+	std::cout << "  Size: " << width << ", " << height << "\n";
 
 	CreateMap(width, height);
 
@@ -117,6 +140,11 @@ bool TileMap::LoadHeightmapFromImage(std::string filename)
 
 bool TileMap::RenderMap(RenderData& renderData)
 {
+	// TODO the color updating should be event based and not updating every tile every frame
+
+	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+	//std::cout << "Task ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
+
 	sf::RectangleShape rectangle(sf::Vector2f(0, 0));
 	rectangle.setSize(sf::Vector2f((float)m_cellPhysicalWidth, (float)m_cellPhysicalWidth));
 
@@ -128,13 +156,19 @@ bool TileMap::RenderMap(RenderData& renderData)
 		);
 	};
 
-	sf::Color lowestClr(67, 53, 35);
-	sf::Color highestClr(223, 181, 130);
+	//sf::Color lowestClr(67, 53, 35);
+	//sf::Color highestClr(223, 181, 130);
+	sf::Color lowestClr(0, 0, 0);
+	sf::Color highestClr(255, 255, 255);
+
+
 	//sf::Color goopClr(70, 90, 230);
 	sf::Color goopClr(0, 0, 255);
 	sf::Color goopClrWarning(255, 0, 255);
 		//rgb(186, 158, 124)
 		//rgb(223, 181, 130)
+
+	int quadPos[4] = { 0,1,2,3 };
 	for (int y = 0; y < m_height; y++)
 	{
 		for (int x = 0; x < m_width; x++)
@@ -170,17 +204,28 @@ bool TileMap::RenderMap(RenderData& renderData)
 
 			sf::Color groundWithGoopClr = lerpClr(groundClr, goopClr, goopRatio);
 				
-
-
 			if (goopRatio > 1.0)
 				sf::Color groundWithGoopClr = lerpClr(groundClr, goopClrWarning, goopRatio);
 
-			rectangle.setFillColor(groundWithGoopClr);
-
+			m_tileQuads[quadPos[0]].color = groundWithGoopClr;
+			m_tileQuads[quadPos[1]].color = groundWithGoopClr;
+			m_tileQuads[quadPos[2]].color = groundWithGoopClr;
+			m_tileQuads[quadPos[3]].color = groundWithGoopClr;
+			quadPos[0] += 4;
+			quadPos[1] += 4;
+			quadPos[2] += 4;
+			quadPos[3] += 4;
+			/*rectangle.setFillColor(groundWithGoopClr);
 			rectangle.setPosition((float)(x * m_cellPhysicalWidth), (float)(y * m_cellPhysicalWidth));
-			renderData.window.draw(rectangle);
+			renderData.window.draw(rectangle);*/
+
 		}
 	}
+
+	renderData.window.draw(m_tileQuads);
+
+	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+	std::cout << "Tilemap render time: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
 
 	return true;
 }
@@ -191,36 +236,52 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 	double flowCap = flowRate * 1.0;
 	double minGoopFlowHeight = 0.0000001;
 
+	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
 	for (int iterCount = 0; iterCount < 10; iterCount++)
 	{
 		int x, y;
-		int height = 100;
+		int height = 20;
 
-		bool autoFill = false;
 
+		/*******Temporary********/
+
+		std::chrono::steady_clock::time_point subUpdateBegin = std::chrono::steady_clock::now();
+
+		for (auto& curEmitter : m_emittingPoints)
+		{
+			x = curEmitter.x;
+			y = curEmitter.y;
+			m_map.at(y * m_width + x).SetGoopHeight(m_emittingHeight);
+			m_map.at((y + 1) * m_width + x).SetGoopHeight(m_emittingHeight);
+			m_map.at(y * m_width + (x + 1)).SetGoopHeight(m_emittingHeight);
+			m_map.at((y + 1) * m_width + (x + 1)).SetGoopHeight(m_emittingHeight);
+		}
+		/*bool autoFill = true;
 		if (autoFill)
 		{
-			x = 69;
-			y = 95;
+			x = 152;
+			y = 5;
 			m_map.at(y * m_width + x).SetGoopHeight(height);
 			m_map.at((y + 1) * m_width + x).SetGoopHeight(height);
 			m_map.at(y * m_width + (x + 1)).SetGoopHeight(height);
 			m_map.at((y + 1) * m_width + (x + 1)).SetGoopHeight(height);
 
-			x = 85;
-			y = 55;
+			x = 161;
+			y = 82;
 			m_map.at(y * m_width + x).SetGoopHeight(height);
 			m_map.at((y + 1) * m_width + x).SetGoopHeight(height);
 			m_map.at(y * m_width + (x + 1)).SetGoopHeight(height);
 			m_map.at((y + 1) * m_width + (x + 1)).SetGoopHeight(height);
 
-			x = 17;
-			y = 95;
+			x = 120;
+			y = 106;
 			m_map.at(y * m_width + x).SetGoopHeight(height);
 			m_map.at((y + 1) * m_width + x).SetGoopHeight(height);
 			m_map.at(y * m_width + (x + 1)).SetGoopHeight(height);
 			m_map.at((y + 1) * m_width + (x + 1)).SetGoopHeight(height);
-		}
+		}*/
+		/*************************/
 
 		for (TileCell& curCell : m_map)
 		{
@@ -231,58 +292,135 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 			return (n2 - n1) * lerpValue + n1;
 		};
 
+		int taskCount = m_threadCount;
+		int lineCountPer = (int)std::floor(m_height / taskCount);
+
+		std::atomic_int64_t tasksComplete = 0;
+		for (int t = 0; t < taskCount; t++)
+		{
+			int startLine = t * lineCountPer;
+			int endLine = startLine + lineCountPer;
+			int startCellIndex = startLine * m_width;
+
+			if (t == (taskCount - 1))
+				endLine = m_height;
+
+			_addTask([this, &tasksComplete, startLine, endLine, startCellIndex, minGoopFlowHeight, flowCap](int64_t jobID)
+				{
+					double flowCoef = 0.25;
+					std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+					//std::cout << "Task started" << std::endl;
+
+					double flowRate = 0.0;
+					int curCellIndex = startCellIndex;
+
+					for (int y = startLine; y < endLine; y++)
+					{
+						for (int x = 0; x < m_width; x++)
+						{
+							TileCell* pCurCell = &m_map.at(curCellIndex);
+							if (pCurCell->GetGoopOnlyHeight() <= 2.0)
+							{
+								curCellIndex++;
+								continue;
+							}
+							TileCell* pAdjLeft = nullptr, * pAdjRight = nullptr, * pAdjTop = nullptr, * pAdjBottom = nullptr;
+
+							if (x > 0) {
+								pAdjLeft = &m_map.at(curCellIndex - 1);
+							}
+							if (y > 0) {
+								pAdjTop = &m_map.at(curCellIndex - m_width);
+							}
+							if (x < m_width - 1) {
+								pAdjRight = &m_map.at(curCellIndex + 1);
+							}
+							if (y < m_height - 1) {
+								pAdjBottom = &m_map.at(curCellIndex + m_width);
+							}
+
+							if (pAdjLeft)
+							{
+								GOOP_HEIGHT heightDiff = pCurCell->GetGoopHeight() - pAdjLeft->GetGoopHeight();
+								if (heightDiff > flowCap && pCurCell->GetGoopOnlyHeight() > minGoopFlowHeight)
+								{
+									flowRate = heightDiff * flowCoef;
+									pCurCell->IncreaseGoopCalcHeight(-flowRate);
+									pAdjLeft->IncreaseGoopCalcHeight(flowRate);
+								}
+							}
+							if (pAdjRight)
+							{
+								GOOP_HEIGHT heightDiff = pCurCell->GetGoopHeight() - pAdjRight->GetGoopHeight();
+								if (heightDiff > flowCap && pCurCell->GetGoopOnlyHeight() > minGoopFlowHeight)
+								{
+									flowRate = heightDiff * flowCoef;
+									pCurCell->IncreaseGoopCalcHeight(-flowRate);
+									pAdjRight->IncreaseGoopCalcHeight(flowRate);
+								}
+							}
+							if (pAdjTop)
+							{
+								GOOP_HEIGHT heightDiff = pCurCell->GetGoopHeight() - pAdjTop->GetGoopHeight();
+								if (heightDiff > flowCap && pCurCell->GetGoopOnlyHeight() > minGoopFlowHeight)
+								{
+									flowRate = heightDiff * flowCoef;
+									pCurCell->IncreaseGoopCalcHeight(-flowRate);
+									pAdjTop->IncreaseGoopCalcHeight(flowRate);
+								}
+							}
+							if (pAdjBottom)
+							{
+								GOOP_HEIGHT heightDiff = pCurCell->GetGoopHeight() - pAdjBottom->GetGoopHeight();
+								if (heightDiff > flowCap && pCurCell->GetGoopOnlyHeight() > minGoopFlowHeight)
+								{
+									flowRate = heightDiff * flowCoef;
+									pCurCell->IncreaseGoopCalcHeight(-flowRate);
+									pAdjBottom->IncreaseGoopCalcHeight(flowRate);
+								}
+							}
+							curCellIndex++;
+						}
+					}
+					//std::cout << "Task ended" << std::endl;
+					std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+					//std::cout << "Task ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]\n";
+					tasksComplete++;
+				}
+			);
+		}
+
+		while (tasksComplete < taskCount)
+		{
+			//std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			//m_threadAccessConditionVariable.notify_one();
+		}
 
 		
-		int curCellIndex = 0;
+		/*int curCellIndex = 0;
 		for (int y = 0; y < m_height; y++)
 		{
 			for (int x = 0; x < m_width; x++)
 			{
-				//curCellIndex = y * m_width + x;
 				TileCell* pCurCell = &m_map.at(curCellIndex);
 				if (pCurCell->GetGoopOnlyHeight() <= 2.0)
 				{
 					curCellIndex++;
 					continue;
 				}
-
-				//bool bLeftLower = false, bRightLower = false, bTopLower = false, bBottomLower = false;
 				TileCell* pAdjLeft = nullptr, * pAdjRight = nullptr, * pAdjTop = nullptr, * pAdjBottom = nullptr;
-
-				//TileCell* pLowest = nullptr;
 
 				if (x > 0) {
 					pAdjLeft = &m_map.at(curCellIndex-1);
-					/*pLowest = pAdjLeft;
-					if (pCurCell->GetGoopHeight() > pAdjLeft->GetGoopHeight())
-						bLeftLower = true;*/
 				}
 				if (y > 0) {
 					pAdjTop = &m_map.at(curCellIndex-m_width);
-					/*if (!pLowest || (pLowest && pLowest->GetGoopHeight() > pAdjTop->GetGoopHeight()))
-					{
-						pLowest = pAdjTop;
-					}
-					if (pCurCell->GetGoopHeight() > pAdjTop->GetGoopHeight())
-						bTopLower = true;*/
 				}
 				if (x < m_width - 1) {
 					pAdjRight = &m_map.at(curCellIndex+1);
-					/*if (!pLowest || (pLowest && pLowest->GetGoopHeight() > pAdjRight->GetGoopHeight()))
-					{
-						pLowest = pAdjRight;
-					}
-					if (pCurCell->GetGoopHeight() > pAdjRight->GetGoopHeight())
-						bRightLower = true;*/
 				}
 				if (y < m_height - 1) {
 					pAdjBottom = &m_map.at(curCellIndex+m_width);
-					/*if (!pLowest || (pLowest && pLowest->GetGoopHeight() > pAdjBottom->GetGoopHeight()))
-					{
-						pLowest = pAdjBottom;
-					}
-					if (pCurCell->GetGoopHeight() > pAdjBottom->GetGoopHeight())
-						bBottomLower = true;*/
 				}
 
 				if (pAdjLeft)
@@ -325,65 +463,14 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 						pAdjBottom->IncreaseGoopCalcHeight(flowRate);
 					}
 				}
-				
-				// Trying out letting it flow off screen and disappearing
-				/*if (!pAdjLeft)
-					pCurCell->IncreaseGoopCalcHeight(-flowRate);
-				if (!pAdjRight)
-					pCurCell->IncreaseGoopCalcHeight(-flowRate);
-				if (!pAdjTop)
-					pCurCell->IncreaseGoopCalcHeight(-flowRate);
-				if (!pAdjBottom)
-					pCurCell->IncreaseGoopCalcHeight(-flowRate);*/
-
-
-				//if (pLowest && pLowest->GetGoopHeight() < pCurCell->GetGoopHeight() + 1)
-				//{
-				//	////pLowest->SetGoopHeight(pLowest->GetGoopHeight() + 1.0);
-				//	////m_map.at(ly * m_width + lx).SetGoopHeight(pLowest->GetGoopHeight() + 1.0);
-				//	//pCurCell->IncreaseGoopCalcHeight(-10.0);
-				//	//pLowest->IncreaseGoopCalcHeight(10.0);
-				//}
-				//else
-				//{
-				//	//pNewCell->SetGoopHeight(pCurCell->GetGoopHeight());
-				//}
-
-
-
-				/*double totalToAvg = pCurCell->GetGoopHeight();
-				int avgCount = 1;*/
-
-				/*if (x > 0) {
-					totalToAvg += m_map.at((y)*m_width + (x - 1)).GetGoopHeight();
-					avgCount += 1;
-				}
-				if (y > 0) {
-					totalToAvg += m_map.at((y - 1) * m_width + (x)).GetGoopHeight();
-					avgCount += 1;
-				}
-				if (x < m_width - 1) {
-					totalToAvg += m_map.at((y)*m_width + (x + 1)).GetGoopHeight();
-					avgCount += 1;
-					pNewCell->SetGoopHeight(m_map.at((y)*m_width + (x + 1)).GetGoopHeight());
-				}
-				else
-				{
-					pNewCell->SetGoopHeight(0);
-				}
-				if (y < m_height - 1) {
-					totalToAvg += m_map.at((y + 1) * m_width + (x)).GetGoopHeight();
-					avgCount += 1;
-				}*/
-
-				//pNewCell->SetGoopHeight( lerpNum(pCurCell->GetGoopHeight(), totalToAvg / avgCount, 1.0));
-				//pNewCell->SetGoopHeight()
-				//pCurCell->SetGoopHeight(pCurCell->GetGoopHeight() - 1.0);
 				curCellIndex++;
 			}
-		}
+		}*/
 
-		//m_map = m_newMap;
+
+		std::chrono::steady_clock::time_point subUpdateEnd = std::chrono::steady_clock::now();
+		//std::cout << "    Ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (subUpdateEnd - subUpdateBegin).count() << "[ms]\n";
+		
 
 		for (TileCell& curCell : m_map)
 		{
@@ -391,10 +478,12 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 				curCell.SetGoopHeight(curCell.GetGoopCalcHeight());
 			else
 				curCell.SetGoopHeight(0.0);
-
 		}
 
 	}
+
+	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+	//std::cout << "Update ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]\n";
 
 	return true;
 }
@@ -408,6 +497,20 @@ void TileMap::ClearAllGoop()
 	}
 }
 
+void TileMap::SetGlobalGoopSeaLevel(double seaLevel)
+{
+	ClearAllGoop();
+
+	for (TileCell& curCell : m_map)
+	{
+		double goopLevel = seaLevel - curCell.GetHeight();
+		if (goopLevel > 0.0001)
+		{
+			curCell.SetGoopHeight(goopLevel);
+		}
+	}
+}
+
 double TileMap::GetCellPhysicalWidth()
 {
 	return m_cellPhysicalWidth;
@@ -416,4 +519,166 @@ double TileMap::GetCellPhysicalWidth()
 std::vector<TileCell>& TileMap::GetMap()
 {
 	return m_map;
+}
+
+void TileMap::_createThreads()
+{
+	m_shutdownThreads = false;
+
+	m_threadCount = 7;//std::thread::hardware_concurrency();
+	for (int i = 0; i < m_threadCount; i++)
+	{
+		m_threadPool.push_back(std::thread(&TileMap::_threadMain, this, i));
+	}
+
+	// Add some test jobs
+	/*for (int i = 0; i < 50; i++)
+	{
+		_addTask([this](int64_t jobID, std::mutex& jobQueueMutex)
+			{
+				std::cout << "thread job" << std::endl;
+			}
+		);
+	}*/
+}
+
+void TileMap::_joinThreads()
+{
+	m_shutdownThreads = true;
+
+	for (auto& curThread : m_threadPool)
+	{
+		if (curThread.joinable())
+			curThread.join();
+	}
+}
+
+void TileMap::_threadMain(int threadIndex)
+{
+	//std::cout << "thread main: " << threadIndex << std::endl;
+
+	std::function<void(int64_t)> newTask = nullptr;
+	bool bDone = false;
+
+	while (!bDone)
+	{
+		std::chrono::seconds timeoutPeriod(2);
+		auto timePoint = std::chrono::system_clock::now() + timeoutPeriod;
+
+		//std::cout << "thread lock: " << threadIndex << std::endl;
+		//std::cout << "thread unlock: " << threadIndex << std::endl;
+		//std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+		{
+			std::lock_guard<std::mutex> add_lg(m_taskQueueMutex);
+
+			if (m_shutdownThreads)
+			{
+				bDone = true;
+				std::cout << "Shutdown requested" << std::endl;
+				break;
+			}
+			
+			if (!m_threadTasks.empty())
+			{
+				//std::cout << "Found task" << std::endl;
+				newTask = m_threadTasks.front();
+				m_threadTasks.pop();
+			}
+			//else
+			//{
+				//bDone = true;
+				//std::cout << "Queue empty" << std::endl;
+				//break;
+			//}
+		}
+
+		if (newTask)
+		{
+			//std::cout << "Performing task" << std::endl;
+			newTask(1);
+			newTask = nullptr;
+
+			//std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+			//std::cout << "Cycle ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]\n";
+		}
+
+		std::unique_lock<std::mutex> taskDataLock(m_threadAccessMutex);
+		if (m_threadAccessConditionVariable.wait_until(taskDataLock, timePoint) == std::cv_status::timeout)
+		{
+			std::cout << "cv timeout: " << threadIndex << std::endl;
+		}
+
+		//else
+		//std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+		//std::cout << "thread cycle: " << threadIndex << std::endl;
+
+	}
+
+	std::cout << "thread done: " << threadIndex << std::endl;
+}
+
+void TileMap::_addTask(std::function<void(int64_t)> newTask)
+{
+	std::lock_guard<std::mutex> taskDataLock(m_threadAccessMutex);
+	{
+		std::lock_guard<std::mutex> add_lg(m_taskQueueMutex);
+
+		m_threadTasks.push(newTask);
+		m_threadAccessConditionVariable.notify_one();
+	}
+}
+
+bool TileMap::RenderDepth(RenderData& renderData, int x, int y)
+{
+	if (x < 0 || x >= m_width || y < 0 || y >= m_height)
+		return false;
+
+	TileCell& curCell = m_map.at(y * m_width + x);
+
+	auto viewSize = renderData.window.getView().getSize();
+
+	sf::Vector2f panePos((float)(viewSize.x * 0.9), (float)(viewSize.y * 0.9));
+	sf::Vector2f paneSize((float)(viewSize.x * 0.1), (float)(viewSize.y * 0.1));
+
+	sf::RectangleShape rectangle;
+	rectangle.setSize(paneSize);
+	rectangle.setPosition(panePos);
+	rectangle.setFillColor(sf::Color::Black);
+	renderData.window.draw(rectangle);
+
+	auto groundHeight = curCell.GetHeight();
+	auto goopHeight = curCell.GetGoopOnlyHeight();
+
+	sf::Vector2f groundRectSize((float)(paneSize.x * 0.1), (float)(paneSize.y * ((float) groundHeight / (float)CELL_HEIGHT_RANGE)));
+	rectangle.setSize(groundRectSize);
+	rectangle.setPosition(sf::Vector2f((float)(panePos.x + (paneSize.x*0.1)), (float)(panePos.y + paneSize.y - groundRectSize.y) ));
+	rectangle.setFillColor(sf::Color(128, 128, 128));
+	renderData.window.draw(rectangle);
+
+	sf::Vector2f goopRectSize((float)(paneSize.x * 0.1), (float)(paneSize.y * ((float)goopHeight / (float)GOOP_HEIGHT_RANGE)));
+	rectangle.setSize(goopRectSize);
+	rectangle.setPosition(sf::Vector2f((float)(panePos.x + (paneSize.x * 0.3)), (float)(panePos.y + paneSize.y - goopRectSize.y)));
+	rectangle.setFillColor(sf::Color(0, 0, 200));
+	renderData.window.draw(rectangle);
+
+
+
+
+	groundRectSize = sf::Vector2f((float)(paneSize.x * 0.1), (float)(paneSize.y * ((float)groundHeight / (float)(CELL_HEIGHT_RANGE+ GOOP_HEIGHT_RANGE))));
+	rectangle.setSize(groundRectSize);
+	rectangle.setPosition(sf::Vector2f((float)(panePos.x + (paneSize.x * 0.7)), (float)(panePos.y + paneSize.y - groundRectSize.y)));
+	rectangle.setFillColor(sf::Color(128, 128, 128));
+	renderData.window.draw(rectangle);
+
+	goopRectSize = sf::Vector2f((float)(paneSize.x * 0.1), (float)(paneSize.y * ((float)goopHeight / (float)(CELL_HEIGHT_RANGE + GOOP_HEIGHT_RANGE))));
+	rectangle.setSize(goopRectSize);
+	rectangle.setPosition(sf::Vector2f((float)(panePos.x + (paneSize.x * 0.7)), (float)(panePos.y + paneSize.y - goopRectSize.y - groundRectSize.y)));
+	rectangle.setFillColor(sf::Color(0, 0, 200));
+	renderData.window.draw(rectangle);
+
+
+
+	return true;
 }

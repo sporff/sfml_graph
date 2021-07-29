@@ -13,10 +13,9 @@ int main()
 {
 	GraphMap graphMap;
 	TileMap tileMap;
-	tileMap.CreateMap(100,100, 50);
-	tileMap.LoadHeightmapFromImage("c:/Media/hmRidge_100.png");
-
-	std::cout << std::thread::hardware_concurrency() << "\n";
+	tileMap.CreateMap(100,100, 10);
+	tileMap.LoadHeightmapFromImage("c:/Media/hmRidge_200.png");
+	tileMap.SetGlobalGoopSeaLevel(5.0);
 
 	//graphMap.AddNodes(
 	//	{
@@ -357,26 +356,53 @@ int main()
 
 	while (window.isOpen())
 	{
+		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
 		sf::Vector2i mousePosInt = sf::Mouse::getPosition(window);
 		GRAPH_VECTOR mousePos((float)mousePosInt.x, (float)mousePosInt.y);
+		int mouseMapX = (int)(mousePos.x / tileMap.GetCellPhysicalWidth());
+		int mouseMapY = (int)(mousePos.y / tileMap.GetCellPhysicalWidth());
+
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
 			int height = 30;
-			int x = mousePos.x / tileMap.GetCellPhysicalWidth();
-			int y = mousePos.y / tileMap.GetCellPhysicalWidth();
 			int mapWidth = tileMap.GetWidth();
 			int mapHeight = tileMap.GetHeight();
-			if (x >= 0 && y >= 0 && x < mapWidth-1 && y < mapHeight-1)
+			if (mouseMapX >= 0 && mouseMapY >= 0 && mouseMapX < mapWidth-1 && mouseMapY < mapHeight-1)
 			{
-				tileMap.GetMap().at(y * mapWidth +x).SetGoopHeight(height);
-				tileMap.GetMap().at((y + 1) * mapWidth + x).SetGoopHeight(height);
-				tileMap.GetMap().at(y * mapWidth + (x + 1)).SetGoopHeight(height);
-				tileMap.GetMap().at((y + 1) * mapWidth + (x + 1)).SetGoopHeight(height);
+				tileMap.GetMap().at(mouseMapY * mapWidth +mouseMapX).SetGoopHeight(height);
+				tileMap.GetMap().at((mouseMapY + 1) * mapWidth + mouseMapX).SetGoopHeight(height);
+				tileMap.GetMap().at(mouseMapY * mapWidth + (mouseMapX + 1)).SetGoopHeight(height);
+				tileMap.GetMap().at((mouseMapY + 1) * mapWidth + (mouseMapX + 1)).SetGoopHeight(height);
 			}
 		}
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
 		{
 			tileMap.ClearAllGoop();
+			tileMap.m_emittingPoints.clear();
+		}
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Middle))
+		{
+			int height = 30;
+			int mapWidth = tileMap.GetWidth();
+			int mapHeight = tileMap.GetHeight();
+
+			if (mouseMapX >= 0 && mouseMapY >= 0 && mouseMapX < mapWidth - 1 && mouseMapY < mapHeight - 1)
+			{
+				int bExists = false;
+				for (auto& curPoint : tileMap.m_emittingPoints)
+				{
+					if (curPoint.x == mousePosInt.x && curPoint.y == mousePosInt.y)
+					{
+						bExists = true;
+						break;
+					}
+				}
+				if (!bExists)
+				{
+					tileMap.m_emittingPoints.push_back(sf::Vector2i(mouseMapX,mouseMapY));
+				}
+			}
 		}
 
 		sf::Event event;
@@ -562,6 +588,7 @@ int main()
 
 		tileMap.UpdateGoop(0.01f);
 		tileMap.RenderMap(renderData);
+		tileMap.RenderDepth(renderData, mouseMapX, mouseMapY);
 		//graphMap.RenderNodes(renderData);
 		//graphMap.RenderEdges(renderData);
 		//graphMap.RenderEdgeEntities(renderData);
@@ -572,6 +599,9 @@ int main()
 		//window.draw(shape);
 
 		window.display();
+
+		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+		std::cout << "Frame time: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
 	}
 
 	return 0;
