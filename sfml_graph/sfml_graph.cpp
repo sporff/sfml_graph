@@ -3,6 +3,7 @@
 #include <iostream>
 #include <thread>
 #include <SFML/Graphics.hpp>
+#include "GameInstance.h"
 #include "GraphNode.h"
 #include "GraphEdge.h"
 #include "GraphMap.h"
@@ -11,6 +12,8 @@
 
 int main()
 {
+	GameInstance gameInstance;
+
 	GraphMap graphMap;
 	TileMap tileMap;
 	tileMap.CreateMap(100,100, 50);
