@@ -1,4 +1,9 @@
+#include "GameTypes.h"
+#include "GraphTypes.h"
+#include "TileMap.h"
+#include "GraphMap.h"
 #include "GameInstance.h"
+#include "InputManager.h"
 
 GameInstance::GameInstance()
 	: m_pInputMgr(nullptr)
@@ -23,13 +28,63 @@ void GameInstance::Tick(RenderData& renderData)
 	if (m_pTileMap == nullptr || m_pGraphMap == nullptr)
 		return;
 
-	// Render tile map
-	m_pTileMap->RenderMap(renderData);
-	/*Temporary*/
 	int mouseMapX = (int)(m_mousePos.x / m_pTileMap->GetCellPhysicalWidth());
 	int mouseMapY = (int)(m_mousePos.y / m_pTileMap->GetCellPhysicalWidth());
+
+	if (m_pInputMgr->Is_MouseButtonPressed(sf::Mouse::Button::Left))
+	{
+		int height = 30;
+		int mapWidth = m_pTileMap->GetWidth();
+		int mapHeight = m_pTileMap->GetHeight();
+		if (mouseMapX >= 0 && mouseMapY >= 0 && mouseMapX < mapWidth - 1 && mouseMapY < mapHeight - 1)
+		{
+			m_pTileMap->GetMap().at(mouseMapY * mapWidth + mouseMapX).SetGoopHeight(height);
+			m_pTileMap->GetMap().at((mouseMapY + 1) * mapWidth + mouseMapX).SetGoopHeight(height);
+			m_pTileMap->GetMap().at(mouseMapY * mapWidth + (mouseMapX + 1)).SetGoopHeight(height);
+			m_pTileMap->GetMap().at((mouseMapY + 1) * mapWidth + (mouseMapX + 1)).SetGoopHeight(height);
+		}
+	}
+
+	if (m_pInputMgr->Is_MouseButtonPressed(sf::Mouse::Button::Right))
+	{
+		m_pTileMap->ClearAllGoop();
+		m_pTileMap->m_emittingPoints.clear();
+	}
+
+	if (m_pInputMgr->Is_MouseButtonPressed(sf::Mouse::Button::Middle))
+	{
+		//if (m_pInputMgr->Is_KeyPressed(sf::Keyboard::LControl))
+		{
+			int height = 30;
+			int mapWidth = m_pTileMap->GetWidth();
+			int mapHeight = m_pTileMap->GetHeight();
+
+
+			if (mouseMapX >= 0 && mouseMapY >= 0 && mouseMapX < mapWidth - 1 && mouseMapY < mapHeight - 1)
+			{
+				int bExists = false;
+				for (auto& curPoint : m_pTileMap->m_emittingPoints)
+				{
+					if (curPoint.x == m_mousePos.x && curPoint.y == m_mousePos.y)
+					{
+						bExists = true;
+						break;
+					}
+				}
+				if (!bExists)
+				{
+					m_pTileMap->m_emittingPoints.push_back(sf::Vector2i(mouseMapX, mouseMapY));
+				}
+			}
+		}
+	}
+
+
+
+	m_pTileMap->UpdateGoop(0.0);
+	// Render tile map
+	m_pTileMap->RenderMap(renderData);
 	m_pTileMap->RenderDepth(renderData, mouseMapX, mouseMapY);
-	/***********/
 
 	// Render graph map
 	/*m_graphMap.RenderNodes(renderData);

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "TileMap.h"
-#include "GraphMap.h"
 
 class InputManager;
+class TileMap;
+class GraphMap;
 
 using GameVector2i = sf::Vector2i;
 using GameVector2f = sf::Vector2f;
