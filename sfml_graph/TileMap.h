@@ -17,12 +17,13 @@ public:
 	int GetWidth();
 	int GetHeight();
 
-	bool CreateMap(int w, int h, CELL_HEIGHT cellHeight=LOWEST_CELL_HEIGHT);
+	bool CreateMap(int w, int h, CELL_HEIGHT cellHeight = LOWEST_CELL_HEIGHT);
 	void DestroyMap();
 
 	bool SetAllTileHeights(CELL_HEIGHT newHeight);
 	bool SetRandomCellHeights();
 	bool LoadHeightmapFromImage(std::string filename);
+	void ResizeTileQuads(double cellSize);
 
 	bool RenderMap(RenderData& renderData);
 	bool UpdateGoop(float fTimeDelta);

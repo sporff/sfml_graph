@@ -12,7 +12,10 @@
 
 int main()
 {
+	sf::RenderWindow window(sf::VideoMode(1605, 1605), "What");
+
 	GameInstance gameInstance;
+	gameInstance.Init(window, "c:/Media/hmRidge_200.png");
 
 	GraphMap graphMap;
 	TileMap tileMap;
@@ -334,10 +337,6 @@ int main()
 		}
 	);
 
-	sf::RenderWindow window(sf::VideoMode(1605, 1605), "What");
-	sf::CircleShape shape(100.f);
-	shape.setFillColor(sf::Color::Green);
-
 	enum class MouseMode {
 		AddingNew,
 		None
@@ -589,9 +588,9 @@ int main()
 				mouseMode = MouseMode::None;
 		}
 
-		tileMap.UpdateGoop(0.01f);
+		/*tileMap.UpdateGoop(0.01f);
 		tileMap.RenderMap(renderData);
-		tileMap.RenderDepth(renderData, mouseMapX, mouseMapY);
+		tileMap.RenderDepth(renderData, mouseMapX, mouseMapY);*/
 		//graphMap.RenderNodes(renderData);
 		//graphMap.RenderEdges(renderData);
 		//graphMap.RenderEdgeEntities(renderData);
@@ -600,6 +599,8 @@ int main()
 		//std::cout << mousePos.x << ", " << mousePos.y << "\n";
 		//shape.setPosition((int)mousePos.x, (int)mousePos.y);
 		//window.draw(shape);
+
+		gameInstance.Tick(renderData);
 
 		window.display();
 

@@ -35,20 +35,6 @@ bool TileMap::CreateMap(int w, int h, CELL_HEIGHT cellHeight)
 	m_width = w;
 	m_height = h;
 
-	m_tileQuads.clear();
-	for (int y = 0; y < m_height; y++)
-	{
-		for (int x = 0; x < m_width; x++)
-		{
-			m_tileQuads.append(sf::Vertex(sf::Vector2f((float)(x*m_cellPhysicalWidth)						, (float)(y*m_cellPhysicalWidth + m_cellPhysicalWidth))	, sf::Color::Red));
-			m_tileQuads.append(sf::Vertex(sf::Vector2f((float)(x*m_cellPhysicalWidth)						, (float)(y*m_cellPhysicalWidth))						, sf::Color::Red));
-			m_tileQuads.append(sf::Vertex(sf::Vector2f((float)(x*m_cellPhysicalWidth + m_cellPhysicalWidth)	, (float)(y*m_cellPhysicalWidth))						, sf::Color::Red));
-			m_tileQuads.append(sf::Vertex(sf::Vector2f((float)(x*m_cellPhysicalWidth + m_cellPhysicalWidth)	, (float)(y*m_cellPhysicalWidth + m_cellPhysicalWidth))	, sf::Color::Red));
-		}
-	}
-
-	m_tileQuads.setPrimitiveType(sf::Quads);
-
 	return false;
 }
 
@@ -628,6 +614,23 @@ void TileMap::_addTask(std::function<void(int64_t)> newTask)
 		m_threadTasks.push(newTask);
 		m_threadAccessConditionVariable.notify_one();
 	}
+}
+
+void TileMap::ResizeTileQuads(double cellSize)
+{
+	m_tileQuads.clear();
+	for (int y = 0; y < m_height; y++)
+	{
+		for (int x = 0; x < m_width; x++)
+		{
+			m_tileQuads.append(sf::Vertex(sf::Vector2f((float)(x * m_cellPhysicalWidth), (float)(y * m_cellPhysicalWidth + m_cellPhysicalWidth)), sf::Color::Red));
+			m_tileQuads.append(sf::Vertex(sf::Vector2f((float)(x * m_cellPhysicalWidth), (float)(y * m_cellPhysicalWidth)), sf::Color::Red));
+			m_tileQuads.append(sf::Vertex(sf::Vector2f((float)(x * m_cellPhysicalWidth + m_cellPhysicalWidth), (float)(y * m_cellPhysicalWidth)), sf::Color::Red));
+			m_tileQuads.append(sf::Vertex(sf::Vector2f((float)(x * m_cellPhysicalWidth + m_cellPhysicalWidth), (float)(y * m_cellPhysicalWidth + m_cellPhysicalWidth)), sf::Color::Red));
+		}
+	}
+
+	m_tileQuads.setPrimitiveType(sf::Quads);
 }
 
 bool TileMap::RenderDepth(RenderData& renderData, int x, int y)
