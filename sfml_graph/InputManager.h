@@ -13,6 +13,8 @@ public:
 
 	void SetGameInstance(GameInstance* pGameInst);
 
+	void Event_WindowResized(sf::Vector2i windowSize);
+
 	void Event_MouseButtonPressed(sf::Mouse::Button mouseButton);
 	void Event_MouseButtonReleased(sf::Mouse::Button mouseButton);
 	void Event_MouseMoved(sf::Vector2i mousePosition);

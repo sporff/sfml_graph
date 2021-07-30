@@ -95,7 +95,7 @@ void GameInstance::Tick(RenderData& renderData)
 
 void GameInstance::Init(sf::RenderWindow& window, std::string tilemapHeightMapFilename)
 {
-	m_viewSize = window.getView().getSize();
+	m_viewSize = GameVector2i(window.getView().getSize().x, window.getView().getSize().y);
 
 	m_pTileMap = new TileMap();
 	_initTileMap(tilemapHeightMapFilename);
@@ -130,13 +130,7 @@ void GameInstance::_initTileMap(std::string filename)
 	}
 	//m_pTileMap->SetGlobalGoopSeaLevel(5.0);
 
-	double cellSize = 1.0;
-	if (m_viewSize.x < m_viewSize.y)
-		cellSize = m_viewSize.x / m_pTileMap->GetWidth();
-	else
-		cellSize = m_viewSize.x / m_pTileMap->GetHeight();
-
-	m_pTileMap->ResizeTileQuads(cellSize);
+	_sizeTileMap();
 }
 
 void GameInstance::_initGraphMap()
@@ -423,7 +417,26 @@ void GameInstance::_initGraphMap()
 	/**************************/
 }
 
+void GameInstance::_sizeTileMap()
+{
+	double cellSize = 1.0;
+	if (m_viewSize.x < m_viewSize.y)
+		cellSize = (double)m_viewSize.x / (double)m_pTileMap->GetWidth();
+	else
+		cellSize = (double)m_viewSize.y / (double)m_pTileMap->GetHeight();
+
+
+	m_pTileMap->ResizeTileQuads(cellSize);
+}
+
 void GameInstance::OnMouseMoved(GameVector2i mousePosition)
 {
 	m_mousePos = mousePosition;	// Cache position for components to use
+}
+
+void GameInstance::OnWindowResized(GameVector2i newViewSize)
+{
+	m_viewSize = newViewSize;
+
+	_sizeTileMap();
 }

@@ -377,6 +377,18 @@ int main()
 		{
 			switch (event.type)
 			{
+			case sf::Event::Resized:
+			{
+				//auto viewSize = window.getView().getSize();
+				sf::Vector2f viewSize(event.size.width, event.size.height);
+
+				sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+				window.setView(sf::View(visibleArea));
+
+				inputManager.Event_WindowResized(sf::Vector2i(event.size.width, event.size.height));
+				
+				break;
+			}
 			case sf::Event::MouseButtonPressed:
 			{
 				inputManager.Event_MouseButtonPressed(event.mouseButton.button);

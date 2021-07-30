@@ -102,10 +102,10 @@ bool TileMap::LoadHeightmapFromImage(std::string filename)
 	}
 	int width = heightMap.getSize().x, height = heightMap.getSize().y;
 
-	if (height > width)
+	/*if (height > width)
 		m_cellPhysicalWidth = 1600.0 / (double)height;
 	else
-		m_cellPhysicalWidth = 1600.0 / (double)width;
+		m_cellPhysicalWidth = 1600.0 / (double)width;*/
 
 	std::cout << "  Size: " << width << ", " << height << "\n";
 
@@ -618,6 +618,8 @@ void TileMap::_addTask(std::function<void(int64_t)> newTask)
 
 void TileMap::ResizeTileQuads(double cellSize)
 {
+	m_cellPhysicalWidth = cellSize;
+
 	m_tileQuads.clear();
 	for (int y = 0; y < m_height; y++)
 	{
