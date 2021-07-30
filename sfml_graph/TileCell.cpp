@@ -1,3 +1,5 @@
+#include "GameTypes.h"
+#include "GraphTypes.h"
 #include "TileCell.h"
 
 TileCell::TileCell()

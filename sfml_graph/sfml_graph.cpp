@@ -8,8 +8,11 @@
 #include "GameInstance.h"
 #include "GraphNode.h"
 #include "GraphEdge.h"
-#include "GraphMap.h"
 #include "GraphEdgeEntity.h"
+#include "GraphMap.h"
+#include "TileEntity.h"
+#include "TileCell.h"
+#include "TileEntity.h"
 #include "TileMap.h"
 #include "InputManager.h"
 
@@ -379,14 +382,11 @@ int main()
 			{
 			case sf::Event::Resized:
 			{
-				//auto viewSize = window.getView().getSize();
-				sf::Vector2f viewSize(event.size.width, event.size.height);
+				sf::Vector2f viewSize((float)event.size.width, (float)event.size.height);
 
-				sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+				sf::FloatRect visibleArea(0.f, 0.f, viewSize.x, viewSize.y);
 				window.setView(sf::View(visibleArea));
-
 				inputManager.Event_WindowResized(sf::Vector2i(event.size.width, event.size.height));
-				
 				break;
 			}
 			case sf::Event::MouseButtonPressed:

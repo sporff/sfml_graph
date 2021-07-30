@@ -1,22 +1,10 @@
 #pragma once
 
-#include <cstdint>
-
 enum class CELL_TYPE
 {
 	Normal,
 	INVALID
 };
-
-using CELL_HEIGHT = int64_t;
-const CELL_HEIGHT NULL_CELL_HEIGHT = -1;
-const CELL_HEIGHT LOWEST_CELL_HEIGHT = 0;
-const CELL_HEIGHT HIGHEST_CELL_HEIGHT = 100;
-const CELL_HEIGHT CELL_HEIGHT_RANGE = HIGHEST_CELL_HEIGHT - LOWEST_CELL_HEIGHT;
-
-using GOOP_HEIGHT = double;
-const GOOP_HEIGHT GOOP_HEIGHT_RANGE = 100;
-
 
 class TileCell
 {

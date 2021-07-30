@@ -1,6 +1,11 @@
 #include "GameTypes.h"
 #include "GraphTypes.h"
+#include "TileEntity.h"
+#include "TileCell.h"
 #include "TileMap.h"
+#include "GraphNode.h"
+#include "GraphEdge.h"
+#include "GraphEdgeEntity.h"
 #include "GraphMap.h"
 #include "GameInstance.h"
 #include "InputManager.h"
@@ -95,7 +100,7 @@ void GameInstance::Tick(RenderData& renderData)
 
 void GameInstance::Init(sf::RenderWindow& window, std::string tilemapHeightMapFilename)
 {
-	m_viewSize = GameVector2i(window.getView().getSize().x, window.getView().getSize().y);
+	m_viewSize = GameVector2i((int)window.getView().getSize().x, (int)window.getView().getSize().y);
 
 	m_pTileMap = new TileMap();
 	_initTileMap(tilemapHeightMapFilename);

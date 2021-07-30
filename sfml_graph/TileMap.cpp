@@ -1,4 +1,8 @@
 #include <iostream>
+#include "GameTypes.h"
+#include "GraphTypes.h"
+#include "TileEntity.h"
+#include "TileCell.h"
 #include "TileMap.h"
 
 TileMap::TileMap()
@@ -278,7 +282,7 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 			return (n2 - n1) * lerpValue + n1;
 		};
 
-		int taskCount = m_threadCount;
+		size_t taskCount = m_threadCount;
 		int lineCountPer = (int)std::floor(m_height / taskCount);
 
 		std::atomic_int64_t tasksComplete = 0;
@@ -376,7 +380,7 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 			);
 		}
 
-		while (tasksComplete < taskCount)
+		while (tasksComplete < (int)taskCount)
 		{
 			//std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			//m_threadAccessConditionVariable.notify_one();
@@ -500,6 +504,13 @@ void TileMap::SetGlobalGoopSeaLevel(double seaLevel)
 double TileMap::GetCellPhysicalWidth()
 {
 	return m_cellPhysicalWidth;
+}
+
+bool TileMap::AddTileEntity(const TileEntity* pNewEntity)
+{
+	m_tileEntities.push_back(*pNewEntity);
+
+	return false;
 }
 
 std::vector<TileCell>& TileMap::GetMap()

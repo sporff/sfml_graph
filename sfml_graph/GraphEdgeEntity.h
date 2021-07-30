@@ -1,7 +1,5 @@
 #pragma once
 
-#include "GraphTypes.h"
-
 enum class EDGE_ENTITY_TYPE
 {
 	Normal,

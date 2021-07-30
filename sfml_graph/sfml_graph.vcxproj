@@ -159,10 +159,12 @@
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="sfml_graph.cpp" />
     <ClCompile Include="TileCell.cpp" />
+    <ClCompile Include="TileEntity.cpp" />
     <ClCompile Include="TileMap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameInstance.h" />
+    <ClInclude Include="GameTypes.h" />
     <ClInclude Include="GraphEdge.h" />
     <ClInclude Include="GraphEdgeEntity.h" />
     <ClInclude Include="GraphMap.h" />
@@ -170,6 +172,7 @@
     <ClInclude Include="GraphTypes.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="TileCell.h" />
+    <ClInclude Include="TileEntity.h" />
     <ClInclude Include="TileMap.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

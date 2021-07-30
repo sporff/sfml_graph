@@ -1,3 +1,9 @@
+#include <SFML/Graphics.hpp>
+#include <SFML/System/Vector2.hpp>
+
+#include "GameTypes.h"
+#include "GraphTypes.h"
+#include "GraphNode.h"
 #include "GraphEdge.h"
 
 GraphEdge::GraphEdge(GRAPH_EDGE_ID id)

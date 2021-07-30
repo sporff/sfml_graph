@@ -1,6 +1,5 @@
 #pragma once
 
-
 class InputManager;
 class TileMap;
 class GraphMap;

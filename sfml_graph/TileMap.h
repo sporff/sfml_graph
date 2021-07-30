@@ -5,8 +5,6 @@
 #include <thread>
 #include <functional>
 #include <mutex>
-#include "GraphTypes.h"
-#include "TileCell.h"
 
 class TileMap
 {
@@ -32,6 +30,8 @@ public:
 
 	double GetCellPhysicalWidth();
 
+	bool AddTileEntity(const TileEntity* pNewEntity);
+
 	// Temporary
 	std::vector<TileCell>& GetMap();
 private:
@@ -41,6 +41,8 @@ private:
 	int m_height;
 	std::vector<TileCell> m_map;
 	sf::VertexArray m_tileQuads;
+
+	std::vector<TileEntity> m_tileEntities;
 
 	std::condition_variable m_threadAccessConditionVariable;
 	std::mutex m_threadAccessMutex;

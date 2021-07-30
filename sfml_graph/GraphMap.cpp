@@ -1,11 +1,16 @@
-#include "GraphTypes.h"
-#include "GraphMap.h"
 #include <string>
 #include <iostream>
 #include <queue>
 #include <algorithm>
 #include <chrono>
 #include <time.h>
+
+#include "GameTypes.h"
+#include "GraphTypes.h"
+#include "GraphNode.h"
+#include "GraphEdge.h"
+#include "GraphEdgeEntity.h"
+#include "GraphMap.h"
 
 GraphMap::GraphMap()
 	: m_nextNodeID(0)

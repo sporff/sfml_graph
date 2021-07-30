@@ -1,12 +1,6 @@
 #pragma once
-
-#include <set>
-#include <map>
 #include <unordered_map>
-#include "GraphTypes.h"
-#include "GraphNode.h"
-#include "GraphEdge.h"
-#include "GraphEdgeEntity.h"
+#include <set>
 
 using GraphNodeMap = std::unordered_map<GRAPH_NODE_ID, GraphNode>;
 using GraphEdgeMap = std::unordered_map<GRAPH_EDGE_ID, GraphEdge>;
