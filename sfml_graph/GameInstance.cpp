@@ -1,20 +1,90 @@
+#include "GameTypes.h"
+#include "GraphTypes.h"
+#include "TileMap.h"
+#include "GraphMap.h"
 #include "GameInstance.h"
+#include "InputManager.h"
 
 GameInstance::GameInstance()
+	: m_pInputMgr(nullptr)
+	, m_pTileMap(nullptr)
+	, m_pGraphMap(nullptr)
 {
 
 }
 
 GameInstance::~GameInstance()
 {
+	Shutdown();
+}
 
+void GameInstance::SetInputManager(InputManager* pInputMgr)
+{
+	m_pInputMgr = pInputMgr;
 }
 
 void GameInstance::Tick(RenderData& renderData)
 {
+	if (m_pTileMap == nullptr || m_pGraphMap == nullptr)
+		return;
+
+	int mouseMapX = (int)(m_mousePos.x / m_pTileMap->GetCellPhysicalWidth());
+	int mouseMapY = (int)(m_mousePos.y / m_pTileMap->GetCellPhysicalWidth());
+
+	if (m_pInputMgr->Is_MouseButtonPressed(sf::Mouse::Button::Left))
+	{
+		int height = 30;
+		int mapWidth = m_pTileMap->GetWidth();
+		int mapHeight = m_pTileMap->GetHeight();
+		if (mouseMapX >= 0 && mouseMapY >= 0 && mouseMapX < mapWidth - 1 && mouseMapY < mapHeight - 1)
+		{
+			m_pTileMap->GetMap().at(mouseMapY * mapWidth + mouseMapX).SetGoopHeight(height);
+			m_pTileMap->GetMap().at((mouseMapY + 1) * mapWidth + mouseMapX).SetGoopHeight(height);
+			m_pTileMap->GetMap().at(mouseMapY * mapWidth + (mouseMapX + 1)).SetGoopHeight(height);
+			m_pTileMap->GetMap().at((mouseMapY + 1) * mapWidth + (mouseMapX + 1)).SetGoopHeight(height);
+		}
+	}
+
+	if (m_pInputMgr->Is_MouseButtonPressed(sf::Mouse::Button::Right))
+	{
+		m_pTileMap->ClearAllGoop();
+		m_pTileMap->m_emittingPoints.clear();
+	}
+
+	if (m_pInputMgr->Is_MouseButtonPressed(sf::Mouse::Button::Middle))
+	{
+		//if (m_pInputMgr->Is_KeyPressed(sf::Keyboard::LControl))
+		{
+			int height = 30;
+			int mapWidth = m_pTileMap->GetWidth();
+			int mapHeight = m_pTileMap->GetHeight();
+
+
+			if (mouseMapX >= 0 && mouseMapY >= 0 && mouseMapX < mapWidth - 1 && mouseMapY < mapHeight - 1)
+			{
+				int bExists = false;
+				for (auto& curPoint : m_pTileMap->m_emittingPoints)
+				{
+					if (curPoint.x == m_mousePos.x && curPoint.y == m_mousePos.y)
+					{
+						bExists = true;
+						break;
+					}
+				}
+				if (!bExists)
+				{
+					m_pTileMap->m_emittingPoints.push_back(sf::Vector2i(mouseMapX, mouseMapY));
+				}
+			}
+		}
+	}
+
+
+
+	m_pTileMap->UpdateGoop(0.0);
 	// Render tile map
-	m_tileMap.RenderMap(renderData);
-	//m_tileMap.RenderDepth(renderData);
+	m_pTileMap->RenderMap(renderData);
+	m_pTileMap->RenderDepth(renderData, mouseMapX, mouseMapY);
 
 	// Render graph map
 	/*m_graphMap.RenderNodes(renderData);
@@ -27,39 +97,63 @@ void GameInstance::Init(sf::RenderWindow& window, std::string tilemapHeightMapFi
 {
 	m_viewSize = window.getView().getSize();
 
+	m_pTileMap = new TileMap();
 	_initTileMap(tilemapHeightMapFilename);
+
+	m_pGraphMap = new GraphMap();
 	_initGraphMap();
+}
+
+void GameInstance::Shutdown()
+{
+	if (m_pTileMap != nullptr)
+	{
+		delete m_pTileMap;
+		m_pTileMap = nullptr;
+	}
+
+	if (m_pGraphMap != nullptr)
+	{
+		delete m_pGraphMap;
+		m_pGraphMap = nullptr;
+	}
 }
 
 void GameInstance::_initTileMap(std::string filename)
 {
-	if (!m_tileMap.LoadHeightmapFromImage(filename))
+	if (m_pTileMap == nullptr)
+		return;
+
+	if (!m_pTileMap->LoadHeightmapFromImage(filename))
 	{
-		m_tileMap.CreateMap(100, 100, 10);
+		m_pTileMap->CreateMap(100, 100, 10);
 	}
-	//m_tileMap.SetGlobalGoopSeaLevel(5.0);
+	//m_pTileMap->SetGlobalGoopSeaLevel(5.0);
 
 	double cellSize = 1.0;
 	if (m_viewSize.x < m_viewSize.y)
-		cellSize = m_viewSize.x / m_tileMap.GetWidth();
+		cellSize = m_viewSize.x / m_pTileMap->GetWidth();
 	else
-		cellSize = m_viewSize.x / m_tileMap.GetHeight();
+		cellSize = m_viewSize.x / m_pTileMap->GetHeight();
 
-	m_tileMap.ResizeTileQuads(cellSize);
+	m_pTileMap->ResizeTileQuads(cellSize);
 }
 
 void GameInstance::_initGraphMap()
 {
+	if (m_pGraphMap == nullptr)
+		return;
+
 	/***** Temporary data *****/
 	for (int y = 0; y < 10; y++)
 	{
 		for (int x = 0; x < 10; x++)
 		{
-			m_graphMap.AddNode({ 50.f + x * 70.f, 50.f + y * 70.f });
+			m_pGraphMap->AddNode({ 50.f + x * 70.f, 50.f + y * 70.f });
 		}
 	}
 
-	m_graphMap.AddEdges(
+	m_pGraphMap->AddEdges(
 		{
 			/*{0,1, GRAPH_EDGE_DIR::Bidirectional}
 			, {1,2, GRAPH_EDGE_DIR::Bidirectional}
@@ -327,4 +421,9 @@ void GameInstance::_initGraphMap()
 		}
 	);
 	/**************************/
+}
+
+void GameInstance::OnMouseMoved(GameVector2i mousePosition)
+{
+	m_mousePos = mousePosition;	// Cache position for components to use
 }

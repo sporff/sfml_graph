@@ -3,19 +3,26 @@
 #include <iostream>
 #include <thread>
 #include <SFML/Graphics.hpp>
+#include "GameTypes.h"
+#include "GraphTypes.h"
 #include "GameInstance.h"
 #include "GraphNode.h"
 #include "GraphEdge.h"
 #include "GraphMap.h"
 #include "GraphEdgeEntity.h"
 #include "TileMap.h"
+#include "InputManager.h"
 
 int main()
 {
 	sf::RenderWindow window(sf::VideoMode(1605, 1605), "What");
 
+	InputManager inputManager;
 	GameInstance gameInstance;
+
+	inputManager.SetGameInstance(&gameInstance);
 	gameInstance.Init(window, "c:/Media/hmRidge_200.png");
+	gameInstance.SetInputManager(&inputManager);
 
 	GraphMap graphMap;
 	TileMap tileMap;
@@ -365,48 +372,6 @@ int main()
 		int mouseMapX = (int)(mousePos.x / tileMap.GetCellPhysicalWidth());
 		int mouseMapY = (int)(mousePos.y / tileMap.GetCellPhysicalWidth());
 
-		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
-		{
-			int height = 30;
-			int mapWidth = tileMap.GetWidth();
-			int mapHeight = tileMap.GetHeight();
-			if (mouseMapX >= 0 && mouseMapY >= 0 && mouseMapX < mapWidth-1 && mouseMapY < mapHeight-1)
-			{
-				tileMap.GetMap().at(mouseMapY * mapWidth +mouseMapX).SetGoopHeight(height);
-				tileMap.GetMap().at((mouseMapY + 1) * mapWidth + mouseMapX).SetGoopHeight(height);
-				tileMap.GetMap().at(mouseMapY * mapWidth + (mouseMapX + 1)).SetGoopHeight(height);
-				tileMap.GetMap().at((mouseMapY + 1) * mapWidth + (mouseMapX + 1)).SetGoopHeight(height);
-			}
-		}
-		if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
-		{
-			tileMap.ClearAllGoop();
-			tileMap.m_emittingPoints.clear();
-		}
-		if (sf::Mouse::isButtonPressed(sf::Mouse::Middle))
-		{
-			int height = 30;
-			int mapWidth = tileMap.GetWidth();
-			int mapHeight = tileMap.GetHeight();
-
-			if (mouseMapX >= 0 && mouseMapY >= 0 && mouseMapX < mapWidth - 1 && mouseMapY < mapHeight - 1)
-			{
-				int bExists = false;
-				for (auto& curPoint : tileMap.m_emittingPoints)
-				{
-					if (curPoint.x == mousePosInt.x && curPoint.y == mousePosInt.y)
-					{
-						bExists = true;
-						break;
-					}
-				}
-				if (!bExists)
-				{
-					tileMap.m_emittingPoints.push_back(sf::Vector2i(mouseMapX,mouseMapY));
-				}
-			}
-		}
-
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
@@ -414,23 +379,13 @@ int main()
 			{
 			case sf::Event::MouseButtonPressed:
 			{
-				switch (event.mouseButton.button)
-				{
-				case sf::Mouse::Left:
-				{
-					break;
-				}
-				case sf::Mouse::Middle:
-					std::cout << "Middle down\n";
-					break;
-				case sf::Mouse::Right:
-					std::cout << "Right down\n";
-					break;
-				}
+				inputManager.Event_MouseButtonPressed(event.mouseButton.button);
 				break;
 			}
 			case sf::Event::MouseButtonReleased:
 			{
+				inputManager.Event_MouseButtonReleased(event.mouseButton.button);
+
 				graphMap.ClearHighlightedNodes();
 				std::tuple<const GraphNode*, double> closestNodeInfo = graphMap.FindClosestNode(mousePos);
 				const GraphNode* closestNode = std::get<0>(closestNodeInfo);
@@ -511,11 +466,13 @@ int main()
 						graphMap.ClearSelectedNodes();
 					}
 					break;
-				}
-				break;*/
+				}*/
+				break;
 			}
 			case sf::Event::MouseMoved:
 			{
+				inputManager.Event_MouseMoved(sf::Vector2i(event.mouseMove.x, event.mouseMove.y));
+
 				graphMap.ClearHighlightedNodes();
 				std::tuple<const GraphNode*, double> closestNodeInfo = graphMap.FindClosestNode(mousePos);
 				auto closestNode = std::get<0>(closestNodeInfo);
@@ -530,6 +487,7 @@ int main()
 				std::cout << "Scroll\n";
 				break;
 			case sf::Event::KeyPressed:
+				inputManager.Event_KeyPressed(event.key.code);
 				//std::cout << "KeyPressed\n";
 
 				if (event.key.code == sf::Keyboard::Key::Delete)
@@ -562,6 +520,7 @@ int main()
 				}
 				break;
 			case sf::Event::KeyReleased:
+				inputManager.Event_KeyReleased(event.key.code);
 				if (event.key.code == sf::Keyboard::Key::LControl || event.key.code == sf::Keyboard::Key::RControl)
 				{
 					bCtrlPressed = false;
@@ -588,24 +547,10 @@ int main()
 				mouseMode = MouseMode::None;
 		}
 
-		/*tileMap.UpdateGoop(0.01f);
-		tileMap.RenderMap(renderData);
-		tileMap.RenderDepth(renderData, mouseMapX, mouseMapY);*/
-		//graphMap.RenderNodes(renderData);
-		//graphMap.RenderEdges(renderData);
-		//graphMap.RenderEdgeEntities(renderData);
-		//graphMap.AddDistanceToEdgeEntity(0, 0.5);
-
-		//std::cout << mousePos.x << ", " << mousePos.y << "\n";
-		//shape.setPosition((int)mousePos.x, (int)mousePos.y);
-		//window.draw(shape);
-
 		gameInstance.Tick(renderData);
-
 		window.display();
-
 		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-		std::cout << "Frame time: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
+		//std::cout << "Frame time: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
 	}
 
 	return 0;
