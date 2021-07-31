@@ -163,7 +163,7 @@ GRAPH_ROUTE_INDEX GraphEdgeEntity::GetRouteIndex()
 void GraphEdgeEntity::Draw(RenderData& renderData, GRAPH_NODE_COLOR color /*= GRAPH_NODE_COLOR::Normal*/)
 {
 	sf::CircleShape shape(3.f);
-	shape.setPosition(GRAPH_VECTOR(m_cachedPos.x - 3.f, m_cachedPos.y - 3.f));
+	shape.setPosition(GameVector2f(m_cachedPos.x - 3.f, m_cachedPos.y - 3.f));
 
 	switch (color)
 	{
@@ -182,7 +182,7 @@ void GraphEdgeEntity::Draw(RenderData& renderData, GRAPH_NODE_COLOR color /*= GR
 	renderData.window.draw(shape);
 }
 
-void GraphEdgeEntity::_setCachedPosition(GRAPH_VECTOR cachedPos)
+void GraphEdgeEntity::_setCachedPosition(GameVector2f cachedPos)
 {
 	m_cachedPos = cachedPos;
 }

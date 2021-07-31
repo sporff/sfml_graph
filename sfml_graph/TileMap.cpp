@@ -507,11 +507,17 @@ double TileMap::GetCellPhysicalWidth()
 	return m_cellPhysicalWidth;
 }
 
-bool TileMap::AddTileEntity(const TileEntity* pNewEntity)
+bool TileMap::AddTileEntity(const TileEntity& newEntity)
 {
-	m_tileEntities.push_back(*pNewEntity);
+	auto copyEntity = TileEntity(m_nextTileEntityID++, newEntity);
+	auto tilePos = copyEntity.GetTilePosTopLeft();
+	auto tileFootprint = copyEntity.GetTileFootprint();
+	copyEntity.SetWorldPos(GameVector2f((float)(tilePos.x*m_cellPhysicalWidth), (float)(tilePos.y * m_cellPhysicalWidth)));
+	// TODO rotate entity
+	copyEntity.SetWorldSize(GameVector2f((float)(tileFootprint.x * m_cellPhysicalWidth), (float)(tileFootprint.y * m_cellPhysicalWidth)));
+	m_tileEntities.push_back(copyEntity);
 
-	return false;
+	return true;
 }
 
 const TileEntity* TileMap::GetTileEntity(TILE_ENTITY_ID id) const
@@ -656,6 +662,15 @@ void TileMap::ResizeTileQuads(double cellSize)
 	}
 
 	m_tileQuads.setPrimitiveType(sf::Quads);
+}
+
+bool TileMap::RenderEntities(RenderData& renderData)
+{
+	for (auto& curEntity : m_tileEntities)
+	{
+		curEntity.Draw(renderData);
+	}
+	return true;
 }
 
 bool TileMap::RenderDepth(RenderData& renderData, int x, int y)

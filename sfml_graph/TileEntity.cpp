@@ -37,12 +37,38 @@ TILE_ENTITY_ID TileEntity::GetID() const
 	return m_id;
 }
 
+GameVector2i TileEntity::GetTilePosTopLeft() const
+{
+	return m_mapPosTopLeft;
+}
+
+GameVector2i TileEntity::GetTileFootprint() const
+{
+	return m_tileFootprint;
+}
+
+TileEntityDirection TileEntity::GetDirection() const
+{
+	return m_direction;
+}
+
+void TileEntity::SetWorldPos(GameVector2f worldPos)
+{
+	m_cachedWorldPos = worldPos;
+}
+
+void TileEntity::SetWorldSize(GameVector2f worldSize)
+{
+	m_cachedWorldSize = worldSize;
+}
+
 void TileEntity::Draw(RenderData& renderData)
 {
 	// Temporary drawing
-	sf::CircleShape shape(5.f);
-	shape.setPosition(GRAPH_VECTOR(m_cachedWorldPos.x - m_tileFootprint.x*0.5f, m_cachedWorldPos.y - m_tileFootprint.y*0.5f));
+	sf::RectangleShape shape;
+	shape.setPosition(GameVector2f(m_cachedWorldPos.x, m_cachedWorldPos.y));
 	shape.setFillColor(sf::Color::Red);
+	shape.setSize(m_cachedWorldSize);
 
 	/*switch (color)
 	{

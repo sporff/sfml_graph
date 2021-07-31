@@ -5,7 +5,6 @@
 #include <SFML/Graphics.hpp>
 #include "GameTypes.h"
 #include "GraphTypes.h"
-#include "GameInstance.h"
 #include "GraphNode.h"
 #include "GraphEdge.h"
 #include "GraphEdgeEntity.h"
@@ -15,6 +14,7 @@
 #include "TileEntity.h"
 #include "TileMap.h"
 #include "InputManager.h"
+#include "GameInstance.h"
 
 int main()
 {
@@ -26,6 +26,9 @@ int main()
 	inputManager.SetGameInstance(&gameInstance);
 	gameInstance.Init(window, "c:/Media/hmRidge_200.png");
 	gameInstance.SetInputManager(&inputManager);
+
+	gameInstance.AddEntity(TileEntity(GameVector2i(2, 2), TileEntityDirection::Angle_0, GameVector2i(10,10), GameVector2f(100.f, 100.f)));
+	gameInstance.AddEntity(TileEntity(GameVector2i(4, 2), TileEntityDirection::Angle_0, GameVector2i(15, 15), GameVector2f(150.f, 150.f)));
 
 	enum class MouseMode {
 		AddingNew,
@@ -50,7 +53,7 @@ int main()
 	{
 		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 		sf::Vector2i mousePosInt = sf::Mouse::getPosition(window);
-		GRAPH_VECTOR mousePos((float)mousePosInt.x, (float)mousePosInt.y);
+		GameVector2f mousePos((float)mousePosInt.x, (float)mousePosInt.y);
 
 		sf::Event event;
 		while (window.pollEvent(event))

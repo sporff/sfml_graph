@@ -11,12 +11,12 @@ public:
 	GRAPH_NODE_ID GetID() const;
 
 	void SetPos(float x, float y);
-	const GRAPH_VECTOR& GetPos() const;
+	const GameVector2f& GetPos() const;
 
 	void Draw(RenderData& renderData, GRAPH_NODE_COLOR color=GRAPH_NODE_COLOR::Normal );
 
 private:
 	GRAPH_NODE_ID m_id;
-	GRAPH_VECTOR m_pos;
+	GameVector2f m_pos;
 };
 

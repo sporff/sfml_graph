@@ -90,6 +90,7 @@ void GameInstance::Tick(RenderData& renderData)
 	// Render tile map
 	m_pTileMap->RenderMap(renderData);
 	m_pTileMap->RenderDepth(renderData, mouseMapX, mouseMapY);
+	m_pTileMap->RenderEntities(renderData);
 
 	// Render graph map
 	/*m_graphMap.RenderNodes(renderData);
@@ -444,4 +445,10 @@ void GameInstance::OnWindowResized(GameVector2i newViewSize)
 	m_viewSize = newViewSize;
 
 	_sizeTileMap();
+}
+
+bool GameInstance::AddEntity(const TileEntity& newEntity)
+{
+	m_pTileMap->AddTileEntity(newEntity);
+	return false;
 }

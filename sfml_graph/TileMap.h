@@ -23,6 +23,7 @@ public:
 	bool LoadHeightmapFromImage(std::string filename);
 	void ResizeTileQuads(double cellSize);
 
+	bool RenderEntities(RenderData& renderData);
 	bool RenderMap(RenderData& renderData);
 	bool UpdateGoop(float fTimeDelta);
 	void ClearAllGoop();
@@ -30,7 +31,7 @@ public:
 
 	double GetCellPhysicalWidth();
 
-	bool AddTileEntity(const TileEntity* pNewEntity);
+	bool AddTileEntity(const TileEntity& pNewEntity);
 	const TileEntity* GetTileEntity(TILE_ENTITY_ID id) const;
 
 	// Temporary

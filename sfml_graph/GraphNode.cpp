@@ -34,7 +34,7 @@ void GraphNode::SetPos(float x, float y)
 	m_pos.y = y;
 }
 
-const GRAPH_VECTOR& GraphNode::GetPos() const
+const GameVector2f& GraphNode::GetPos() const
 {
 	return m_pos;
 }
@@ -42,7 +42,7 @@ const GRAPH_VECTOR& GraphNode::GetPos() const
 void GraphNode::Draw(RenderData& renderData, GRAPH_NODE_COLOR color)
 {
 	sf::CircleShape shape(5.f);
-	shape.setPosition(GRAPH_VECTOR(m_pos.x - 5.f, m_pos.y - 5.f));
+	shape.setPosition(GameVector2f(m_pos.x - 5.f, m_pos.y - 5.f));
 
 	switch (color)
 	{

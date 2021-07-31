@@ -23,6 +23,8 @@ public:
 	void OnMouseMoved(GameVector2i mousePosition);
 	void OnWindowResized(GameVector2i newViewSize);
 
+	bool AddEntity(const TileEntity& newEntity);
+
 private:
 	InputManager* m_pInputMgr;
 	TileMap* m_pTileMap;

@@ -248,22 +248,22 @@ std::vector<const GraphEdge*> GraphMap::FindEdgesTravelableFromNode(const GraphN
 
 double GraphMap::GetDistanceBetweenNodes(const GraphNode& node1, const GraphNode& node2) const
 {
-	GRAPH_VECTOR node1pos = node1.GetPos();
-	GRAPH_VECTOR node2pos = node2.GetPos();
+	GameVector2f node1pos = node1.GetPos();
+	GameVector2f node2pos = node2.GetPos();
 
-	GRAPH_VECTOR dirVec = GRAPH_VECTOR(node2pos.x - node1pos.x, node2pos.y - node1pos.y);
+	GameVector2f dirVec = GameVector2f(node2pos.x - node1pos.x, node2pos.y - node1pos.y);
 	return std::sqrt(dirVec.x * dirVec.x + dirVec.y*dirVec.y);
 }
 
-double GraphMap::GetDistanceToNode(const GRAPH_VECTOR& pos, const GraphNode& node)
+double GraphMap::GetDistanceToNode(const GameVector2f& pos, const GraphNode& node)
 {
-	GRAPH_VECTOR nodePos = node.GetPos();
+	GameVector2f nodePos = node.GetPos();
 
-	GRAPH_VECTOR dirVec = GRAPH_VECTOR(pos.x - nodePos.x, pos.y - nodePos.y);
+	GameVector2f dirVec = GameVector2f(pos.x - nodePos.x, pos.y - nodePos.y);
 	return std::sqrt(dirVec.x * dirVec.x + dirVec.y * dirVec.y);
 }
 
-std::tuple<const GraphNode*, double> GraphMap::FindClosestNode(const GRAPH_VECTOR& pos)
+std::tuple<const GraphNode*, double> GraphMap::FindClosestNode(const GameVector2f& pos)
 {
 	const GraphNode* closestNode = nullptr;
 	double closestDis = -1.0;
@@ -337,7 +337,7 @@ bool GraphMap::AddDistanceToEdgeEntity(GRAPH_ENTITY_ID id, double nDisToAdd)
 	return true;
 }
 
-GRAPH_VECTOR GraphMap::EdgeToScreenPos(GRAPH_EDGE_ID edgeID, GRAPH_NODE_ID curNodeID, double nDistanceFromPrev)
+GameVector2f GraphMap::EdgeToScreenPos(GRAPH_EDGE_ID edgeID, GRAPH_NODE_ID curNodeID, double nDistanceFromPrev)
 {
 	auto pEdge = GetEdge(edgeID);
 	if (pEdge != nullptr)
@@ -356,12 +356,12 @@ GRAPH_VECTOR GraphMap::EdgeToScreenPos(GRAPH_EDGE_ID edgeID, GRAPH_NODE_ID curNo
 					std::swap(pStartNode, pEndNode);
 				}
 				// Found start and end nodes
-				GRAPH_VECTOR startPos = pStartNode->GetPos();
-				GRAPH_VECTOR endPos = pEndNode->GetPos();
-				GRAPH_VECTOR edgeVector = {endPos.x - startPos.x, endPos.y - startPos.y};
+				GameVector2f startPos = pStartNode->GetPos();
+				GameVector2f endPos = pEndNode->GetPos();
+				GameVector2f edgeVector = {endPos.x - startPos.x, endPos.y - startPos.y};
 				double nEdgeLength = pEdge->GetLength();
 
-				GRAPH_VECTOR entityEdgeVector = {
+				GameVector2f entityEdgeVector = {
 					(float)((edgeVector.x / nEdgeLength)*nDistanceFromPrev + startPos.x)
 					, (float)((edgeVector.y / nEdgeLength)*nDistanceFromPrev + startPos.y)
 				};
@@ -383,12 +383,12 @@ GRAPH_VECTOR GraphMap::EdgeToScreenPos(GRAPH_EDGE_ID edgeID, GRAPH_NODE_ID curNo
 	return { 0.f, 0.f };
 }
 
-GRAPH_VECTOR GraphMap::ScreenToWorld(GRAPH_VECTOR screenVector)
+GameVector2f GraphMap::ScreenToWorld(GameVector2f screenVector)
 {
 	return screenVector;
 }
 
-GRAPH_VECTOR GraphMap::WorldToScreen(GRAPH_VECTOR worldVector)
+GameVector2f GraphMap::WorldToScreen(GameVector2f worldVector)
 {
 	return worldVector;
 }
@@ -432,7 +432,7 @@ bool GraphMap::RenderEdges(RenderData& renderData)
 	return true;
 }
 
-bool GraphMap::RenderLine(RenderData& renderData, GRAPH_VECTOR startPos, GRAPH_VECTOR endPos)
+bool GraphMap::RenderLine(RenderData& renderData, GameVector2f startPos, GameVector2f endPos)
 {
 	sf::Vertex line[] =
 	{

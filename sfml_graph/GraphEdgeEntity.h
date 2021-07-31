@@ -29,7 +29,7 @@ public:
 
 	void Draw(RenderData& renderData, GRAPH_NODE_COLOR color = GRAPH_NODE_COLOR::Normal);
 
-	void _setCachedPosition(GRAPH_VECTOR cachedPos);
+	void _setCachedPosition(GameVector2f cachedPos);
 
 private:
 	GRAPH_ENTITY_ID m_id;
@@ -38,6 +38,6 @@ private:
 	GRAPH_ROUTE_INDEX m_curRouteIndex;
 	double m_nCurRouteDistanceFromPrev;
 
-	GRAPH_VECTOR m_cachedPos;
+	GameVector2f m_cachedPos;
 };
 

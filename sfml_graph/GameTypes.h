@@ -10,7 +10,6 @@ using GRAPH_ID = GAME_ID;
 using GRAPH_NODE_ID = GRAPH_ID;
 using GRAPH_EDGE_ID = GRAPH_ID;
 using GRAPH_EDGE_WEIGHT = double;
-using GRAPH_VECTOR = sf::Vector2f;
 using GRAPH_ENTITY_ID = GRAPH_ID;
 
 using CELL_HEIGHT = int64_t;
@@ -42,7 +41,7 @@ enum class GRAPH_NODE_COLOR
 struct RenderData
 {
 	sf::RenderWindow& window;
-	GRAPH_VECTOR cameraPos;
+	GameVector2f cameraPos;
 	float cameraScale;
 	float cameraRotation;
 };

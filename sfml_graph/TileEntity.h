@@ -16,6 +16,11 @@ public:
 	~TileEntity();
 
 	TILE_ENTITY_ID GetID() const;
+	GameVector2i GetTilePosTopLeft() const;
+	GameVector2i GetTileFootprint() const;
+	TileEntityDirection GetDirection() const;
+	void SetWorldPos(GameVector2f worldPos);
+	void SetWorldSize(GameVector2f worldSize);
 
 	void Draw(RenderData& renderData);
 
@@ -26,4 +31,5 @@ protected:
 
 	GameVector2i m_mapPosTopLeft;
 	GameVector2f m_cachedWorldPos;
+	GameVector2f m_cachedWorldSize;
 };

@@ -3,6 +3,7 @@
 
 #include "GameTypes.h"
 #include "GraphTypes.h"
+#include "TileEntity.h"
 #include "InputManager.h"
 #include "GameInstance.h"
 
