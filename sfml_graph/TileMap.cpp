@@ -40,6 +40,13 @@ bool TileMap::CreateMap(int w, int h, CELL_HEIGHT cellHeight)
 	m_width = w;
 	m_height = h;
 
+	int cellID = 0;
+	for (auto& curCell : m_map)
+	{
+		curCell.SetID(cellID);
+		cellID++;
+	}
+
 	return false;
 }
 
@@ -507,6 +514,15 @@ double TileMap::GetCellPhysicalWidth()
 	return m_cellPhysicalWidth;
 }
 
+TileCell* TileMap::GetCell(int x, int y)
+{
+	if (x >= 0 && y >= 0 && x < m_width && y < m_height)
+	{
+		return &m_map.at(y * m_width + x);
+	}
+	return nullptr;
+}
+
 bool TileMap::AddTileEntity(const TileEntity& newEntity)
 {
 	auto copyEntity = TileEntity(m_nextTileEntityID++, newEntity);
@@ -515,7 +531,33 @@ bool TileMap::AddTileEntity(const TileEntity& newEntity)
 	copyEntity.SetWorldPos(GameVector2f((float)(tilePos.x*m_cellPhysicalWidth), (float)(tilePos.y * m_cellPhysicalWidth)));
 	// TODO rotate entity
 	copyEntity.SetWorldSize(GameVector2f((float)(tileFootprint.x * m_cellPhysicalWidth), (float)(tileFootprint.y * m_cellPhysicalWidth)));
-	m_tileEntities.push_back(copyEntity);
+
+	bool bOwnedOk = true;
+	std::vector<TileCell*> ownedCells;
+
+	for (int y = 0; y < tileFootprint.y; y++)
+	{
+		for (int x = 0; x < tileFootprint.x; x++)
+		{
+			TileCell* pCell = GetCell(tilePos.x + x, tilePos.y + y);
+			if (pCell == nullptr || pCell->GetOwnerID() != INVALID_GAME_ID)
+			{
+				bOwnedOk = false;
+				break;
+			}
+
+			ownedCells.push_back(pCell);
+		}
+	}
+
+	if (bOwnedOk)
+	{
+		for (TileCell* curCell : ownedCells)
+		{
+			curCell->SetOwnerID(copyEntity.GetID());
+		}
+		m_tileEntities.push_back(copyEntity);
+	}
 
 	return true;
 }

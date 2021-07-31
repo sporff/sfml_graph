@@ -30,6 +30,7 @@ public:
 	void SetGlobalGoopSeaLevel(double seaLevel);
 
 	double GetCellPhysicalWidth();
+	TileCell* GetCell(int x, int y);
 
 	bool AddTileEntity(const TileEntity& pNewEntity);
 	const TileEntity* GetTileEntity(TILE_ENTITY_ID id) const;

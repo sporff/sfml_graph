@@ -15,6 +15,7 @@ using GRAPH_ENTITY_ID = GRAPH_ID;
 using CELL_HEIGHT = int64_t;
 using GOOP_HEIGHT = double;
 
+using TILE_CELL_ID = GAME_ID;
 using TILE_ENTITY_ID = GAME_ID;
 
 using GameVector2i = sf::Vector2i;
