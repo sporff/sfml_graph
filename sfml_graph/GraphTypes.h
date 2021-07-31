@@ -14,11 +14,11 @@ public:
 
 	GraphPathTracker(GRAPH_NODE_ID nodeID, double pathWeight, double pathDistance)
 	{
-		this->prevNodeID = INVALID_NODE_ID;
+		this->prevNodeID = INVALID_GAME_ID;
 		this->nodeID = nodeID;
 		this->pathWeight = pathWeight;
 		this->pathDistance = pathDistance;
-		this->edgeFromPrev = INVALID_EDGE_ID;
+		this->edgeFromPrev = INVALID_GAME_ID;
 	}
 	GraphPathTracker(GRAPH_NODE_ID nodeID, double pathWeight, double pathDistance, GRAPH_NODE_ID prevNodeID, GRAPH_EDGE_ID edgeToPrev)
 	{

@@ -1,16 +1,28 @@
 #pragma once
 
+enum class TileEntityDirection {
+	Angle_0,
+	Angle_90,
+	Angle_180,
+	Angle_270
+};
+
 class TileEntity
 {
 public:
 	TileEntity();
-	TileEntity(GAME_ID id, const TileEntity& copyFrom);
+	TileEntity(GameVector2i footprint, TileEntityDirection dir, GameVector2i posTopLeft, GameVector2f worldPos);
+	TileEntity(TILE_ENTITY_ID id, const TileEntity& copyFrom);
 	~TileEntity();
 
+	TILE_ENTITY_ID GetID() const;
+
+	void Draw(RenderData& renderData);
+
 protected:
-	int m_id;
-	int m_width;
-	int m_height;
+	TILE_ENTITY_ID m_id;
+	GameVector2i m_tileFootprint;
+	TileEntityDirection m_direction;
 
 	GameVector2i m_mapPosTopLeft;
 	GameVector2f m_cachedWorldPos;

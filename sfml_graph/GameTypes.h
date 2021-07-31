@@ -16,6 +16,8 @@ using GRAPH_ENTITY_ID = GRAPH_ID;
 using CELL_HEIGHT = int64_t;
 using GOOP_HEIGHT = double;
 
+using TILE_ENTITY_ID = GAME_ID;
+
 using GameVector2i = sf::Vector2i;
 using GameVector2f = sf::Vector2f;
 
@@ -47,9 +49,7 @@ struct RenderData
 
 
 /* Game constants  */
-const GRAPH_NODE_ID		INVALID_NODE_ID = -1;
-const GRAPH_EDGE_ID		INVALID_EDGE_ID = -1;
-const GRAPH_ENTITY_ID	INVALID_ENTITY_ID = -1;
+const GAME_ID INVALID_GAME_ID = -1;
 
 const GOOP_HEIGHT GOOP_HEIGHT_RANGE = 100;
 const CELL_HEIGHT NULL_CELL_HEIGHT = -1;

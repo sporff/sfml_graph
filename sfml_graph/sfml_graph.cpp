@@ -33,8 +33,8 @@ int main()
 	};
 	
 	bool bCtrlPressed = false;
-	GRAPH_NODE_ID routeStartID = INVALID_NODE_ID, routeEndID = INVALID_NODE_ID;
-	GRAPH_NODE_ID addingFromNodeID = INVALID_NODE_ID;
+	GRAPH_NODE_ID routeStartID = INVALID_GAME_ID, routeEndID = INVALID_GAME_ID;
+	GRAPH_NODE_ID addingFromNodeID = INVALID_GAME_ID;
 	MouseMode mouseMode = MouseMode::None;
 
 	/*routeStartID = graphMap.GetRandomNodeID();

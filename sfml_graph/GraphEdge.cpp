@@ -25,7 +25,7 @@ GraphEdge::GraphEdge(GRAPH_EDGE_ID id, GRAPH_NODE_ID endPt1, GRAPH_NODE_ID endPt
  * Only used for adding new edges "templates" to graph. Calling GraphMap::AddEdge will copy and calculate everything.
  */
 GraphEdge::GraphEdge(GRAPH_NODE_ID endPt1, GRAPH_NODE_ID endPt2, GRAPH_EDGE_DIR dir)
-	: m_id(INVALID_EDGE_ID)
+	: m_id(INVALID_GAME_ID)
 {
 	SetNodes(endPt1, endPt2, dir, -1.f);
 }
@@ -98,7 +98,7 @@ GRAPH_NODE_ID GraphEdge::GetOppositeNodeID(GRAPH_NODE_ID nodeID) const
 	else if (m_endPoints[1] == nodeID)
 		return m_endPoints[0];
 
-	return INVALID_NODE_ID;
+	return INVALID_GAME_ID;
 }
 
 bool GraphEdge::Draw(RenderData& renderData, const GraphNode& node1, const GraphNode& node2, GRAPH_NODE_COLOR color)

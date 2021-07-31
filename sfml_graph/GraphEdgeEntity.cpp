@@ -3,7 +3,7 @@
 #include "GraphEdgeEntity.h"
 
 GraphEdgeEntity::GraphEdgeEntity()
-	: m_id(INVALID_ENTITY_ID)
+	: m_id(INVALID_GAME_ID)
 	, m_type(EDGE_ENTITY_TYPE::Normal)
 	, m_curRouteIndex(INVALID_ROUTE_INDEX)
 	, m_nCurRouteDistanceFromPrev(0.0)
@@ -42,7 +42,7 @@ GRAPH_NODE_ID GraphEdgeEntity::GetPrevNodeID()
 {
 	if (m_curRouteIndex == INVALID_ROUTE_INDEX || m_curRouteIndex >= m_curRoute.size())
 	{
-		return INVALID_NODE_ID;
+		return INVALID_GAME_ID;
 	}
 
 	return m_curRoute.at(m_curRouteIndex).nodeID;
@@ -53,7 +53,7 @@ GRAPH_NODE_ID GraphEdgeEntity::GetNextNodeID()
 	GRAPH_ROUTE_INDEX nextRouteIndex = m_curRouteIndex + 1;
 	if (m_curRouteIndex == INVALID_ROUTE_INDEX || nextRouteIndex >= m_curRoute.size())
 	{
-		return INVALID_NODE_ID;
+		return INVALID_GAME_ID;
 	}
 
 	return m_curRoute.at(nextRouteIndex).nodeID;
@@ -63,7 +63,7 @@ GRAPH_EDGE_ID GraphEdgeEntity::GetCurrentEdgeID()
 {
 	if (m_curRouteIndex == INVALID_ROUTE_INDEX || m_curRouteIndex >= m_curRoute.size())
 	{
-		return INVALID_EDGE_ID;
+		return INVALID_GAME_ID;
 	}
 
 	return m_curRoute.at(m_curRouteIndex).edgeID;
@@ -100,7 +100,7 @@ bool GraphEdgeEntity::SetRoute(const GRAPH_ROUTE& newRoute, bool bForce)
 		}
 		else
 		{
-			m_curRoute = { {prevNodeID, curEdgeID}, {nextNodeID, INVALID_EDGE_ID} };
+			m_curRoute = { {prevNodeID, curEdgeID}, {nextNodeID, INVALID_GAME_ID} };
 			m_curRouteIndex = 0;
 		}
 		return true;
@@ -125,7 +125,7 @@ bool GraphEdgeEntity::SetRoute(const GRAPH_ROUTE& newRoute, bool bForce)
 			m_nCurRouteDistanceFromPrev = 0.0;
 		}
 		else if (prevNodeID == newRoute.at(0).nodeID
-			&& (nextNodeID == INVALID_NODE_ID
+			&& (nextNodeID == INVALID_GAME_ID
 				|| fabs(m_nCurRouteDistanceFromPrev-0.0) < 0.0001
 				|| nextNodeID == newRoute.at(1).nodeID)
 			)

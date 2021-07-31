@@ -18,7 +18,7 @@ GraphNode::GraphNode(GRAPH_NODE_ID id, float x, float y)
 }
 
 GraphNode::GraphNode(float x, float y)
-	: m_id(INVALID_NODE_ID)
+	: m_id(INVALID_GAME_ID)
 {
 	SetPos(x, y);
 }

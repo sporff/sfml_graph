@@ -6,6 +6,7 @@
 #include "TileMap.h"
 
 TileMap::TileMap()
+	: m_nextTileEntityID(0)
 {
 	_createThreads();
 }
@@ -511,6 +512,17 @@ bool TileMap::AddTileEntity(const TileEntity* pNewEntity)
 	m_tileEntities.push_back(*pNewEntity);
 
 	return false;
+}
+
+const TileEntity* TileMap::GetTileEntity(TILE_ENTITY_ID id) const
+{
+	for (const TileEntity& curEntity : m_tileEntities)
+	{
+		if (curEntity.GetID() == id)
+			return &curEntity;
+	}
+
+	return nullptr;
 }
 
 std::vector<TileCell>& TileMap::GetMap()

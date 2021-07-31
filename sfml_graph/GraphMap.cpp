@@ -30,10 +30,10 @@ GRAPH_NODE_ID GraphMap::AddNode(const GraphNode& node)
 
 GRAPH_EDGE_ID GraphMap::AddEdge(const GraphEdge& edge)
 {
-	if (edge.GetStartNodeID() == INVALID_EDGE_ID || edge.GetEndNodeID() == INVALID_EDGE_ID)
-		return INVALID_EDGE_ID;
+	if (edge.GetStartNodeID() == INVALID_GAME_ID || edge.GetEndNodeID() == INVALID_GAME_ID)
+		return INVALID_GAME_ID;
 
-	GRAPH_EDGE_ID addedEdgeID = INVALID_NODE_ID;
+	GRAPH_EDGE_ID addedEdgeID = INVALID_GAME_ID;
 	auto startNodeID = edge.GetStartNodeID();
 	auto endNodeID = edge.GetEndNodeID();
 	auto edgeDir = edge.GetDirection();
@@ -76,7 +76,7 @@ int GraphMap::AddNodes(std::vector<GraphNode> nodeList)
 	int addCount = 0;
 	for (const GraphNode& curNode : nodeList)
 	{
-		if (AddNode(curNode) != INVALID_NODE_ID)
+		if (AddNode(curNode) != INVALID_GAME_ID)
 			addCount++;
 	}
 	return addCount;
@@ -87,7 +87,7 @@ int GraphMap::AddEdges(std::vector<GraphEdge> edgeList)
 	int addCount = 0;
 	for (const GraphEdge& curEdge : edgeList)
 	{
-		if (AddEdge(curEdge) != INVALID_EDGE_ID)
+		if (AddEdge(curEdge) != INVALID_GAME_ID)
 			addCount++;
 	}
 	return addCount;
@@ -125,7 +125,7 @@ const GraphEdge* GraphMap::GetEdge(GRAPH_EDGE_ID edgeID)
 
 GraphEdgeEntity* GraphMap::GetEdgeEntity(GRAPH_ENTITY_ID entityID)
 {
-	if (entityID == INVALID_ENTITY_ID)
+	if (entityID == INVALID_GAME_ID)
 		return nullptr;
 
 	for (auto& curEdgeEntity : m_edgeEntities)
@@ -174,7 +174,7 @@ GRAPH_NODE_ID GraphMap::GetRandomNodeID()
 	if (randNode != nullptr)
 		return randNode->GetID();
 
-	return INVALID_NODE_ID;
+	return INVALID_GAME_ID;
 }
 
 const GraphEdge* GraphMap::GetRandomEdge()
@@ -200,7 +200,7 @@ GRAPH_EDGE_ID GraphMap::GetRandomEdgeID()
 	if (randEdge != nullptr)
 		return randEdge->GetID();
 
-	return INVALID_EDGE_ID;
+	return INVALID_GAME_ID;
 }
 
 const std::tuple<const GraphNode*, const GraphNode*> GraphMap::GetEdgeNodes(const GraphEdge& edge)
@@ -571,7 +571,7 @@ GRAPH_ROUTE GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNo
 	if (startNode == nullptr || endNode == nullptr)
 		return theRoute;
 
-	PushToPQ( pq, GraphPathTracker(startNode->GetID(), 0.0, 0.0, INVALID_NODE_ID, INVALID_EDGE_ID) );
+	PushToPQ( pq, GraphPathTracker(startNode->GetID(), 0.0, 0.0, INVALID_GAME_ID, INVALID_GAME_ID) );
 
 	while (!pq.empty())
 	{
@@ -586,7 +586,7 @@ GRAPH_ROUTE GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNo
 		{
 			double routeDistance = 0.0;
 			GraphPathTracker* curInRoute = &curPNode;
-			GRAPH_EDGE_ID nextEdgeID = INVALID_EDGE_ID;
+			GRAPH_EDGE_ID nextEdgeID = INVALID_GAME_ID;
 
 			while (curInRoute)
 			{

@@ -31,10 +31,12 @@ public:
 	double GetCellPhysicalWidth();
 
 	bool AddTileEntity(const TileEntity* pNewEntity);
+	const TileEntity* GetTileEntity(TILE_ENTITY_ID id) const;
 
 	// Temporary
 	std::vector<TileCell>& GetMap();
 private:
+	TILE_ENTITY_ID m_nextTileEntityID;
 	double m_cellPhysicalWidth = 16.0;
 
 	int m_width;
