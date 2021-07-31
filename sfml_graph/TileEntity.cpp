@@ -8,9 +8,10 @@ TileEntity::TileEntity()
 
 }
 
-TileEntity::TileEntity(GameVector2i footprint, TileEntityDirection dir, GameVector2i mapPosTopLeft, GameVector2f worldPos)
+TileEntity::TileEntity(GRAPH_NODE_ID nodeConnectionID, GameVector2i footprint, TileEntityDirection dir, GameVector2i mapPosTopLeft, GameVector2f worldPos)
 	: TileEntity()
 {
+	m_nodeConnectionID = nodeConnectionID;
 	m_tileFootprint = footprint;
 	m_direction = dir;
 	m_mapPosTopLeft = mapPosTopLeft;
@@ -21,6 +22,7 @@ TileEntity::TileEntity(TILE_ENTITY_ID id, const TileEntity& copyFrom)
 	: TileEntity()
 {
 	m_id = id;
+	m_nodeConnectionID = copyFrom.m_nodeConnectionID;
 	m_tileFootprint = copyFrom.m_tileFootprint;
 	m_direction = copyFrom.m_direction;
 	m_mapPosTopLeft = copyFrom.m_mapPosTopLeft;

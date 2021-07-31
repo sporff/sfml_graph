@@ -27,8 +27,8 @@ int main()
 	gameInstance.Init(window, "c:/Media/hmRidge_200.png");
 	gameInstance.SetInputManager(&inputManager);
 
-	gameInstance.AddEntity(TileEntity(GameVector2i(2, 2), TileEntityDirection::Angle_0, GameVector2i(10,10), GameVector2f(100.f, 100.f)));
-	gameInstance.AddEntity(TileEntity(GameVector2i(4, 2), TileEntityDirection::Angle_0, GameVector2i(15, 15), GameVector2f(150.f, 150.f)));
+	gameInstance.AddEntity(TileEntity(INVALID_GAME_ID, GameVector2i(2, 2), TileEntityDirection::Angle_0, GameVector2i(10, 10), GameVector2f(100.f, 100.f)));
+	gameInstance.AddEntity(TileEntity(INVALID_GAME_ID, GameVector2i(4, 2), TileEntityDirection::Angle_0, GameVector2i(15, 15), GameVector2f(150.f, 150.f)));
 
 	enum class MouseMode {
 		AddingNew,

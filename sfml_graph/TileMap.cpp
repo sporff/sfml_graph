@@ -570,7 +570,7 @@ void TileMap::_joinThreads()
 
 void TileMap::_threadMain(int threadIndex)
 {
-	//std::cout << "thread main: " << threadIndex << std::endl;
+	std::cout << "thread start: " << threadIndex << std::endl;
 
 	std::function<void(int64_t)> newTask = nullptr;
 	bool bDone = false;
@@ -580,55 +580,34 @@ void TileMap::_threadMain(int threadIndex)
 		std::chrono::seconds timeoutPeriod(2);
 		auto timePoint = std::chrono::system_clock::now() + timeoutPeriod;
 
-		//std::cout << "thread lock: " << threadIndex << std::endl;
-		//std::cout << "thread unlock: " << threadIndex << std::endl;
-		//std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-
 		{
 			std::lock_guard<std::mutex> add_lg(m_taskQueueMutex);
 
 			if (m_shutdownThreads)
 			{
 				bDone = true;
-				std::cout << "Shutdown requested" << std::endl;
+				std::cout << "thread shutdown requested" << std::endl;
 				break;
 			}
 			
 			if (!m_threadTasks.empty())
 			{
-				//std::cout << "Found task" << std::endl;
 				newTask = m_threadTasks.front();
 				m_threadTasks.pop();
 			}
-			//else
-			//{
-				//bDone = true;
-				//std::cout << "Queue empty" << std::endl;
-				//break;
-			//}
 		}
 
 		if (newTask)
 		{
-			//std::cout << "Performing task" << std::endl;
 			newTask(1);
 			newTask = nullptr;
-
-			//std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-			//std::cout << "Cycle ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]\n";
 		}
 
 		std::unique_lock<std::mutex> taskDataLock(m_threadAccessMutex);
 		if (m_threadAccessConditionVariable.wait_until(taskDataLock, timePoint) == std::cv_status::timeout)
 		{
-			std::cout << "cv timeout: " << threadIndex << std::endl;
+			std::cout << "thread cond_var timeout: " << threadIndex << std::endl;
 		}
-
-		//else
-		//std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
-		//std::cout << "thread cycle: " << threadIndex << std::endl;
-
 	}
 
 	std::cout << "thread done: " << threadIndex << std::endl;

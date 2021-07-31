@@ -11,7 +11,7 @@ class TileEntity
 {
 public:
 	TileEntity();
-	TileEntity(GameVector2i footprint, TileEntityDirection dir, GameVector2i posTopLeft, GameVector2f worldPos);
+	TileEntity(GRAPH_NODE_ID nodeConnectionID, GameVector2i footprint, TileEntityDirection dir, GameVector2i posTopLeft, GameVector2f worldPos);
 	TileEntity(TILE_ENTITY_ID id, const TileEntity& copyFrom);
 	~TileEntity();
 
@@ -32,4 +32,6 @@ protected:
 	GameVector2i m_mapPosTopLeft;
 	GameVector2f m_cachedWorldPos;
 	GameVector2f m_cachedWorldSize;
+
+	GRAPH_NODE_ID m_nodeConnectionID;
 };
