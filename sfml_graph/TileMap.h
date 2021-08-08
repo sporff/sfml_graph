@@ -5,8 +5,6 @@
 #include <thread>
 #include <functional>
 #include <mutex>
-#include "GraphTypes.h"
-#include "TileCell.h"
 
 class TileMap
 {
@@ -25,22 +23,30 @@ public:
 	bool LoadHeightmapFromImage(std::string filename);
 	void ResizeTileQuads(double cellSize);
 
+	bool RenderEntities(RenderData& renderData);
 	bool RenderMap(RenderData& renderData);
 	bool UpdateGoop(float fTimeDelta);
 	void ClearAllGoop();
 	void SetGlobalGoopSeaLevel(double seaLevel);
 
 	double GetCellPhysicalWidth();
+	TileCell* GetCell(int x, int y);
+
+	bool AddTileEntity(const TileEntity& pNewEntity);
+	const TileEntity* GetTileEntity(TILE_ENTITY_ID id) const;
 
 	// Temporary
 	std::vector<TileCell>& GetMap();
 private:
+	TILE_ENTITY_ID m_nextTileEntityID;
 	double m_cellPhysicalWidth = 16.0;
 
 	int m_width;
 	int m_height;
 	std::vector<TileCell> m_map;
 	sf::VertexArray m_tileQuads;
+
+	std::vector<TileEntity> m_tileEntities;
 
 	std::condition_variable m_threadAccessConditionVariable;
 	std::mutex m_threadAccessMutex;

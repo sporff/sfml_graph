@@ -1,11 +1,16 @@
-#include "GraphTypes.h"
-#include "GraphMap.h"
 #include <string>
 #include <iostream>
 #include <queue>
 #include <algorithm>
 #include <chrono>
 #include <time.h>
+
+#include "GameTypes.h"
+#include "GraphTypes.h"
+#include "GraphNode.h"
+#include "GraphEdge.h"
+#include "GraphEdgeEntity.h"
+#include "GraphMap.h"
 
 GraphMap::GraphMap()
 	: m_nextNodeID(0)
@@ -25,10 +30,10 @@ GRAPH_NODE_ID GraphMap::AddNode(const GraphNode& node)
 
 GRAPH_EDGE_ID GraphMap::AddEdge(const GraphEdge& edge)
 {
-	if (edge.GetStartNodeID() == INVALID_EDGE_ID || edge.GetEndNodeID() == INVALID_EDGE_ID)
-		return INVALID_EDGE_ID;
+	if (edge.GetStartNodeID() == INVALID_GAME_ID || edge.GetEndNodeID() == INVALID_GAME_ID)
+		return INVALID_GAME_ID;
 
-	GRAPH_EDGE_ID addedEdgeID = INVALID_NODE_ID;
+	GRAPH_EDGE_ID addedEdgeID = INVALID_GAME_ID;
 	auto startNodeID = edge.GetStartNodeID();
 	auto endNodeID = edge.GetEndNodeID();
 	auto edgeDir = edge.GetDirection();
@@ -71,7 +76,7 @@ int GraphMap::AddNodes(std::vector<GraphNode> nodeList)
 	int addCount = 0;
 	for (const GraphNode& curNode : nodeList)
 	{
-		if (AddNode(curNode) != INVALID_NODE_ID)
+		if (AddNode(curNode) != INVALID_GAME_ID)
 			addCount++;
 	}
 	return addCount;
@@ -82,7 +87,7 @@ int GraphMap::AddEdges(std::vector<GraphEdge> edgeList)
 	int addCount = 0;
 	for (const GraphEdge& curEdge : edgeList)
 	{
-		if (AddEdge(curEdge) != INVALID_EDGE_ID)
+		if (AddEdge(curEdge) != INVALID_GAME_ID)
 			addCount++;
 	}
 	return addCount;
@@ -120,7 +125,7 @@ const GraphEdge* GraphMap::GetEdge(GRAPH_EDGE_ID edgeID)
 
 GraphEdgeEntity* GraphMap::GetEdgeEntity(GRAPH_ENTITY_ID entityID)
 {
-	if (entityID == INVALID_ENTITY_ID)
+	if (entityID == INVALID_GAME_ID)
 		return nullptr;
 
 	for (auto& curEdgeEntity : m_edgeEntities)
@@ -169,7 +174,7 @@ GRAPH_NODE_ID GraphMap::GetRandomNodeID()
 	if (randNode != nullptr)
 		return randNode->GetID();
 
-	return INVALID_NODE_ID;
+	return INVALID_GAME_ID;
 }
 
 const GraphEdge* GraphMap::GetRandomEdge()
@@ -195,7 +200,7 @@ GRAPH_EDGE_ID GraphMap::GetRandomEdgeID()
 	if (randEdge != nullptr)
 		return randEdge->GetID();
 
-	return INVALID_EDGE_ID;
+	return INVALID_GAME_ID;
 }
 
 const std::tuple<const GraphNode*, const GraphNode*> GraphMap::GetEdgeNodes(const GraphEdge& edge)
@@ -243,22 +248,22 @@ std::vector<const GraphEdge*> GraphMap::FindEdgesTravelableFromNode(const GraphN
 
 double GraphMap::GetDistanceBetweenNodes(const GraphNode& node1, const GraphNode& node2) const
 {
-	GRAPH_VECTOR node1pos = node1.GetPos();
-	GRAPH_VECTOR node2pos = node2.GetPos();
+	GameVector2f node1pos = node1.GetPos();
+	GameVector2f node2pos = node2.GetPos();
 
-	GRAPH_VECTOR dirVec = GRAPH_VECTOR(node2pos.x - node1pos.x, node2pos.y - node1pos.y);
+	GameVector2f dirVec = GameVector2f(node2pos.x - node1pos.x, node2pos.y - node1pos.y);
 	return std::sqrt(dirVec.x * dirVec.x + dirVec.y*dirVec.y);
 }
 
-double GraphMap::GetDistanceToNode(const GRAPH_VECTOR& pos, const GraphNode& node)
+double GraphMap::GetDistanceToNode(const GameVector2f& pos, const GraphNode& node)
 {
-	GRAPH_VECTOR nodePos = node.GetPos();
+	GameVector2f nodePos = node.GetPos();
 
-	GRAPH_VECTOR dirVec = GRAPH_VECTOR(pos.x - nodePos.x, pos.y - nodePos.y);
+	GameVector2f dirVec = GameVector2f(pos.x - nodePos.x, pos.y - nodePos.y);
 	return std::sqrt(dirVec.x * dirVec.x + dirVec.y * dirVec.y);
 }
 
-std::tuple<const GraphNode*, double> GraphMap::FindClosestNode(const GRAPH_VECTOR& pos)
+std::tuple<const GraphNode*, double> GraphMap::FindClosestNode(const GameVector2f& pos)
 {
 	const GraphNode* closestNode = nullptr;
 	double closestDis = -1.0;
@@ -332,7 +337,7 @@ bool GraphMap::AddDistanceToEdgeEntity(GRAPH_ENTITY_ID id, double nDisToAdd)
 	return true;
 }
 
-GRAPH_VECTOR GraphMap::EdgeToScreenPos(GRAPH_EDGE_ID edgeID, GRAPH_NODE_ID curNodeID, double nDistanceFromPrev)
+GameVector2f GraphMap::EdgeToScreenPos(GRAPH_EDGE_ID edgeID, GRAPH_NODE_ID curNodeID, double nDistanceFromPrev)
 {
 	auto pEdge = GetEdge(edgeID);
 	if (pEdge != nullptr)
@@ -351,12 +356,12 @@ GRAPH_VECTOR GraphMap::EdgeToScreenPos(GRAPH_EDGE_ID edgeID, GRAPH_NODE_ID curNo
 					std::swap(pStartNode, pEndNode);
 				}
 				// Found start and end nodes
-				GRAPH_VECTOR startPos = pStartNode->GetPos();
-				GRAPH_VECTOR endPos = pEndNode->GetPos();
-				GRAPH_VECTOR edgeVector = {endPos.x - startPos.x, endPos.y - startPos.y};
+				GameVector2f startPos = pStartNode->GetPos();
+				GameVector2f endPos = pEndNode->GetPos();
+				GameVector2f edgeVector = {endPos.x - startPos.x, endPos.y - startPos.y};
 				double nEdgeLength = pEdge->GetLength();
 
-				GRAPH_VECTOR entityEdgeVector = {
+				GameVector2f entityEdgeVector = {
 					(float)((edgeVector.x / nEdgeLength)*nDistanceFromPrev + startPos.x)
 					, (float)((edgeVector.y / nEdgeLength)*nDistanceFromPrev + startPos.y)
 				};
@@ -378,12 +383,12 @@ GRAPH_VECTOR GraphMap::EdgeToScreenPos(GRAPH_EDGE_ID edgeID, GRAPH_NODE_ID curNo
 	return { 0.f, 0.f };
 }
 
-GRAPH_VECTOR GraphMap::ScreenToWorld(GRAPH_VECTOR screenVector)
+GameVector2f GraphMap::ScreenToWorld(GameVector2f screenVector)
 {
 	return screenVector;
 }
 
-GRAPH_VECTOR GraphMap::WorldToScreen(GRAPH_VECTOR worldVector)
+GameVector2f GraphMap::WorldToScreen(GameVector2f worldVector)
 {
 	return worldVector;
 }
@@ -427,7 +432,7 @@ bool GraphMap::RenderEdges(RenderData& renderData)
 	return true;
 }
 
-bool GraphMap::RenderLine(RenderData& renderData, GRAPH_VECTOR startPos, GRAPH_VECTOR endPos)
+bool GraphMap::RenderLine(RenderData& renderData, GameVector2f startPos, GameVector2f endPos)
 {
 	sf::Vertex line[] =
 	{
@@ -566,7 +571,7 @@ GRAPH_ROUTE GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNo
 	if (startNode == nullptr || endNode == nullptr)
 		return theRoute;
 
-	PushToPQ( pq, GraphPathTracker(startNode->GetID(), 0.0, 0.0, INVALID_NODE_ID, INVALID_EDGE_ID) );
+	PushToPQ( pq, GraphPathTracker(startNode->GetID(), 0.0, 0.0, INVALID_GAME_ID, INVALID_GAME_ID) );
 
 	while (!pq.empty())
 	{
@@ -581,7 +586,7 @@ GRAPH_ROUTE GraphMap::FindShortestPath(const GraphNode* startNode, const GraphNo
 		{
 			double routeDistance = 0.0;
 			GraphPathTracker* curInRoute = &curPNode;
-			GRAPH_EDGE_ID nextEdgeID = INVALID_EDGE_ID;
+			GRAPH_EDGE_ID nextEdgeID = INVALID_GAME_ID;
 
 			while (curInRoute)
 			{

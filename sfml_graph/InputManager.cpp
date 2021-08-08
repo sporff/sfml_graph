@@ -1,7 +1,9 @@
+#include <SFML/Graphics.hpp>
 #include <iostream>
 
 #include "GameTypes.h"
 #include "GraphTypes.h"
+#include "TileEntity.h"
 #include "InputManager.h"
 #include "GameInstance.h"
 

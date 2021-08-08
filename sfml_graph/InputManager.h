@@ -1,7 +1,6 @@
 #pragma once
 
 #include <set>
-#include <SFML/Graphics.hpp>
 
 class GameInstance;
 

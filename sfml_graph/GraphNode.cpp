@@ -1,3 +1,8 @@
+#include <SFML/Graphics.hpp>
+#include <SFML/System/Vector2.hpp>
+
+#include "GameTypes.h"
+#include "GraphTypes.h"
 #include "GraphNode.h"
 
 GraphNode::GraphNode(GRAPH_NODE_ID id)
@@ -13,7 +18,7 @@ GraphNode::GraphNode(GRAPH_NODE_ID id, float x, float y)
 }
 
 GraphNode::GraphNode(float x, float y)
-	: m_id(INVALID_NODE_ID)
+	: m_id(INVALID_GAME_ID)
 {
 	SetPos(x, y);
 }
@@ -29,7 +34,7 @@ void GraphNode::SetPos(float x, float y)
 	m_pos.y = y;
 }
 
-const GRAPH_VECTOR& GraphNode::GetPos() const
+const GameVector2f& GraphNode::GetPos() const
 {
 	return m_pos;
 }
@@ -37,7 +42,7 @@ const GRAPH_VECTOR& GraphNode::GetPos() const
 void GraphNode::Draw(RenderData& renderData, GRAPH_NODE_COLOR color)
 {
 	sf::CircleShape shape(5.f);
-	shape.setPosition(GRAPH_VECTOR(m_pos.x - 5.f, m_pos.y - 5.f));
+	shape.setPosition(GameVector2f(m_pos.x - 5.f, m_pos.y - 5.f));
 
 	switch (color)
 	{

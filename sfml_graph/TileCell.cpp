@@ -1,9 +1,12 @@
+#include "GameTypes.h"
+#include "GraphTypes.h"
 #include "TileCell.h"
 
 TileCell::TileCell()
 	: m_type(CELL_TYPE::Normal)
 	, m_height(0)
 	, m_goopHeight(0)
+	, m_ownerID(INVALID_GAME_ID)
 {
 
 }
@@ -17,6 +20,11 @@ TileCell::TileCell(CELL_HEIGHT height)
 TileCell::~TileCell()
 {
 
+}
+
+void TileCell::SetID(TILE_CELL_ID id)
+{
+	m_id = id;
 }
 
 void TileCell::SetHeight(CELL_HEIGHT newHeight)
@@ -63,4 +71,14 @@ void TileCell::ResetGoopCalcHeight()
 void TileCell::IncreaseGoopCalcHeight(GOOP_HEIGHT heightAdd)
 {
 	m_goopCalcHeight += heightAdd;
+}
+
+void TileCell::SetOwnerID(TILE_ENTITY_ID ownerID)
+{
+	m_ownerID = ownerID;
+}
+
+TILE_ENTITY_ID TileCell::GetOwnerID() const
+{
+	return m_ownerID;
 }

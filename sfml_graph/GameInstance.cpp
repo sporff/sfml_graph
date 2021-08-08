@@ -1,6 +1,11 @@
 #include "GameTypes.h"
 #include "GraphTypes.h"
+#include "TileEntity.h"
+#include "TileCell.h"
 #include "TileMap.h"
+#include "GraphNode.h"
+#include "GraphEdge.h"
+#include "GraphEdgeEntity.h"
 #include "GraphMap.h"
 #include "GameInstance.h"
 #include "InputManager.h"
@@ -85,6 +90,7 @@ void GameInstance::Tick(RenderData& renderData)
 	// Render tile map
 	m_pTileMap->RenderMap(renderData);
 	m_pTileMap->RenderDepth(renderData, mouseMapX, mouseMapY);
+	m_pTileMap->RenderEntities(renderData);
 
 	// Render graph map
 	/*m_graphMap.RenderNodes(renderData);
@@ -95,7 +101,7 @@ void GameInstance::Tick(RenderData& renderData)
 
 void GameInstance::Init(sf::RenderWindow& window, std::string tilemapHeightMapFilename)
 {
-	m_viewSize = GameVector2i(window.getView().getSize().x, window.getView().getSize().y);
+	m_viewSize = GameVector2i((int)window.getView().getSize().x, (int)window.getView().getSize().y);
 
 	m_pTileMap = new TileMap();
 	_initTileMap(tilemapHeightMapFilename);
@@ -439,4 +445,10 @@ void GameInstance::OnWindowResized(GameVector2i newViewSize)
 	m_viewSize = newViewSize;
 
 	_sizeTileMap();
+}
+
+bool GameInstance::AddEntity(const TileEntity& newEntity)
+{
+	m_pTileMap->AddTileEntity(newEntity);
+	return false;
 }

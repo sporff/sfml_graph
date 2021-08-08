@@ -1,6 +1,5 @@
 #pragma once
 
-
 class InputManager;
 class TileMap;
 class GraphMap;
@@ -23,6 +22,8 @@ public:
 
 	void OnMouseMoved(GameVector2i mousePosition);
 	void OnWindowResized(GameVector2i newViewSize);
+
+	bool AddEntity(const TileEntity& newEntity);
 
 private:
 	InputManager* m_pInputMgr;

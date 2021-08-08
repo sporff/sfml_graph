@@ -1,22 +1,10 @@
 #pragma once
 
-#include <cstdint>
-
 enum class CELL_TYPE
 {
 	Normal,
 	INVALID
 };
-
-using CELL_HEIGHT = int64_t;
-const CELL_HEIGHT NULL_CELL_HEIGHT = -1;
-const CELL_HEIGHT LOWEST_CELL_HEIGHT = 0;
-const CELL_HEIGHT HIGHEST_CELL_HEIGHT = 100;
-const CELL_HEIGHT CELL_HEIGHT_RANGE = HIGHEST_CELL_HEIGHT - LOWEST_CELL_HEIGHT;
-
-using GOOP_HEIGHT = double;
-const GOOP_HEIGHT GOOP_HEIGHT_RANGE = 100;
-
 
 class TileCell
 {
@@ -24,6 +12,8 @@ public:
 	TileCell();
 	TileCell(CELL_HEIGHT height);
 	~TileCell();
+
+	void SetID(TILE_CELL_ID id);
 
 	void SetHeight(CELL_HEIGHT newHeight);
 	CELL_HEIGHT GetHeight();
@@ -36,10 +26,15 @@ public:
 	void ResetGoopCalcHeight();
 	void IncreaseGoopCalcHeight(GOOP_HEIGHT heightAdd);
 
+	void SetOwnerID(TILE_ENTITY_ID ownerID);
+	TILE_ENTITY_ID GetOwnerID() const;
+
 private:
+	TILE_CELL_ID m_id;
 	CELL_TYPE m_type;
 	CELL_HEIGHT m_height;
 	GOOP_HEIGHT m_goopHeight;
-
 	GOOP_HEIGHT m_goopCalcHeight;
+
+	TILE_ENTITY_ID m_ownerID;
 };

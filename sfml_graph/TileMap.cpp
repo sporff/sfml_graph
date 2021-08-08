@@ -1,7 +1,12 @@
 #include <iostream>
+#include "GameTypes.h"
+#include "GraphTypes.h"
+#include "TileEntity.h"
+#include "TileCell.h"
 #include "TileMap.h"
 
 TileMap::TileMap()
+	: m_nextTileEntityID(0)
 {
 	_createThreads();
 }
@@ -34,6 +39,13 @@ bool TileMap::CreateMap(int w, int h, CELL_HEIGHT cellHeight)
 	m_map = std::vector<TileCell>(w * h, cellHeight);
 	m_width = w;
 	m_height = h;
+
+	int cellID = 0;
+	for (auto& curCell : m_map)
+	{
+		curCell.SetID(cellID);
+		cellID++;
+	}
 
 	return false;
 }
@@ -278,7 +290,7 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 			return (n2 - n1) * lerpValue + n1;
 		};
 
-		int taskCount = m_threadCount;
+		size_t taskCount = m_threadCount;
 		int lineCountPer = (int)std::floor(m_height / taskCount);
 
 		std::atomic_int64_t tasksComplete = 0;
@@ -376,7 +388,7 @@ bool TileMap::UpdateGoop(float fTimeDelta)
 			);
 		}
 
-		while (tasksComplete < taskCount)
+		while (tasksComplete < (int)taskCount)
 		{
 			//std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			//m_threadAccessConditionVariable.notify_one();
@@ -502,6 +514,65 @@ double TileMap::GetCellPhysicalWidth()
 	return m_cellPhysicalWidth;
 }
 
+TileCell* TileMap::GetCell(int x, int y)
+{
+	if (x >= 0 && y >= 0 && x < m_width && y < m_height)
+	{
+		return &m_map.at(y * m_width + x);
+	}
+	return nullptr;
+}
+
+bool TileMap::AddTileEntity(const TileEntity& newEntity)
+{
+	auto copyEntity = TileEntity(m_nextTileEntityID++, newEntity);
+	auto tilePos = copyEntity.GetTilePosTopLeft();
+	auto tileFootprint = copyEntity.GetTileFootprint();
+	copyEntity.SetWorldPos(GameVector2f((float)(tilePos.x*m_cellPhysicalWidth), (float)(tilePos.y * m_cellPhysicalWidth)));
+	// TODO rotate entity
+	copyEntity.SetWorldSize(GameVector2f((float)(tileFootprint.x * m_cellPhysicalWidth), (float)(tileFootprint.y * m_cellPhysicalWidth)));
+
+	bool bOwnedOk = true;
+	std::vector<TileCell*> ownedCells;
+
+	for (int y = 0; y < tileFootprint.y; y++)
+	{
+		for (int x = 0; x < tileFootprint.x; x++)
+		{
+			TileCell* pCell = GetCell(tilePos.x + x, tilePos.y + y);
+			if (pCell == nullptr || pCell->GetOwnerID() != INVALID_GAME_ID)
+			{
+				bOwnedOk = false;
+				break;
+			}
+
+			ownedCells.push_back(pCell);
+		}
+	}
+
+	if (bOwnedOk)
+	{
+		for (TileCell* curCell : ownedCells)
+		{
+			curCell->SetOwnerID(copyEntity.GetID());
+		}
+		m_tileEntities.push_back(copyEntity);
+	}
+
+	return true;
+}
+
+const TileEntity* TileMap::GetTileEntity(TILE_ENTITY_ID id) const
+{
+	for (const TileEntity& curEntity : m_tileEntities)
+	{
+		if (curEntity.GetID() == id)
+			return &curEntity;
+	}
+
+	return nullptr;
+}
+
 std::vector<TileCell>& TileMap::GetMap()
 {
 	return m_map;
@@ -541,7 +612,7 @@ void TileMap::_joinThreads()
 
 void TileMap::_threadMain(int threadIndex)
 {
-	//std::cout << "thread main: " << threadIndex << std::endl;
+	std::cout << "thread start: " << threadIndex << std::endl;
 
 	std::function<void(int64_t)> newTask = nullptr;
 	bool bDone = false;
@@ -551,55 +622,34 @@ void TileMap::_threadMain(int threadIndex)
 		std::chrono::seconds timeoutPeriod(2);
 		auto timePoint = std::chrono::system_clock::now() + timeoutPeriod;
 
-		//std::cout << "thread lock: " << threadIndex << std::endl;
-		//std::cout << "thread unlock: " << threadIndex << std::endl;
-		//std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-
 		{
 			std::lock_guard<std::mutex> add_lg(m_taskQueueMutex);
 
 			if (m_shutdownThreads)
 			{
 				bDone = true;
-				std::cout << "Shutdown requested" << std::endl;
+				std::cout << "thread shutdown requested" << std::endl;
 				break;
 			}
 			
 			if (!m_threadTasks.empty())
 			{
-				//std::cout << "Found task" << std::endl;
 				newTask = m_threadTasks.front();
 				m_threadTasks.pop();
 			}
-			//else
-			//{
-				//bDone = true;
-				//std::cout << "Queue empty" << std::endl;
-				//break;
-			//}
 		}
 
 		if (newTask)
 		{
-			//std::cout << "Performing task" << std::endl;
 			newTask(1);
 			newTask = nullptr;
-
-			//std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-			//std::cout << "Cycle ended: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]\n";
 		}
 
 		std::unique_lock<std::mutex> taskDataLock(m_threadAccessMutex);
 		if (m_threadAccessConditionVariable.wait_until(taskDataLock, timePoint) == std::cv_status::timeout)
 		{
-			std::cout << "cv timeout: " << threadIndex << std::endl;
+			std::cout << "thread cond_var timeout: " << threadIndex << std::endl;
 		}
-
-		//else
-		//std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
-		//std::cout << "thread cycle: " << threadIndex << std::endl;
-
 	}
 
 	std::cout << "thread done: " << threadIndex << std::endl;
@@ -633,6 +683,15 @@ void TileMap::ResizeTileQuads(double cellSize)
 	}
 
 	m_tileQuads.setPrimitiveType(sf::Quads);
+}
+
+bool TileMap::RenderEntities(RenderData& renderData)
+{
+	for (auto& curEntity : m_tileEntities)
+	{
+		curEntity.Draw(renderData);
+	}
+	return true;
 }
 
 bool TileMap::RenderDepth(RenderData& renderData, int x, int y)

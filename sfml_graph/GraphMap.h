@@ -1,12 +1,6 @@
 #pragma once
-
-#include <set>
-#include <map>
 #include <unordered_map>
-#include "GraphTypes.h"
-#include "GraphNode.h"
-#include "GraphEdge.h"
-#include "GraphEdgeEntity.h"
+#include <set>
 
 using GraphNodeMap = std::unordered_map<GRAPH_NODE_ID, GraphNode>;
 using GraphEdgeMap = std::unordered_map<GRAPH_EDGE_ID, GraphEdge>;
@@ -41,18 +35,18 @@ public:
 	std::vector<const GraphEdge*>							FindEdgesTravelableFromNode(const GraphNode* pNode) const;
 
 	double									GetDistanceBetweenNodes(const GraphNode& node1, const GraphNode& node2) const;
-	double									GetDistanceToNode(const GRAPH_VECTOR& pos, const GraphNode& node);
-	std::tuple<const GraphNode*, double>	FindClosestNode(const GRAPH_VECTOR& pos);
+	double									GetDistanceToNode(const GameVector2f& pos, const GraphNode& node);
+	std::tuple<const GraphNode*, double>	FindClosestNode(const GameVector2f& pos);
 	double									GetEdgeLength(const GraphEdge& edge);
 	bool									AddDistanceToEdgeEntity(GRAPH_ENTITY_ID id, double nDisToAdd);
 
-	GRAPH_VECTOR			EdgeToScreenPos(GRAPH_EDGE_ID edgeID, GRAPH_NODE_ID startNodeID, double distanceFromPrev);
-	GRAPH_VECTOR			ScreenToWorld(GRAPH_VECTOR screenVector);
-	GRAPH_VECTOR			WorldToScreen(GRAPH_VECTOR worldVector);
+	GameVector2f			EdgeToScreenPos(GRAPH_EDGE_ID edgeID, GRAPH_NODE_ID startNodeID, double distanceFromPrev);
+	GameVector2f			ScreenToWorld(GameVector2f screenVector);
+	GameVector2f			WorldToScreen(GameVector2f worldVector);
 
 	bool RenderNodes(RenderData& renderData);
 	bool RenderEdges(RenderData& renderData);
-	bool RenderLine(RenderData& renderData, GRAPH_VECTOR startPos, GRAPH_VECTOR endPos);
+	bool RenderLine(RenderData& renderData, GameVector2f startPos, GameVector2f endPos);
 	bool RenderEdgeEntities(RenderData& renderData);
 
 	void				AddHighlightedNode(GRAPH_NODE_ID nodeID);
