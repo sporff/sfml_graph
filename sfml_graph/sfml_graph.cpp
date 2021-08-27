@@ -24,7 +24,7 @@ int main()
 	GameInstance gameInstance;
 
 	inputManager.SetGameInstance(&gameInstance);
-	gameInstance.Init(window, "c:/Media/hmRidge_200.png");
+	gameInstance.Init(window, "media/river_256.png");
 	gameInstance.SetInputManager(&inputManager);
 
 	gameInstance.AddEntity(TileEntity(INVALID_GAME_ID, GameVector2i(2, 2), TileEntityDirection::Angle_0, GameVector2i(10, 10), GameVector2f(100.f, 100.f)));
